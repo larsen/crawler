@@ -17,11 +17,11 @@ If you want to try out the example graphical dungeon generator, load the example
 (crawler-examples:random-dungeon :w 99 :h 49 :tile-size 10)
 ```
 
-This will create a dungeon that is 99x49 tiles, with a tile size of 10x10, just as the example images below. The example uses [Sketch](http://github.com/vydd/sketch) to display the dungeon graphically. Note that this requires having SDL2 installed on your operating system.
+This will create a dungeon that is 99x49 tiles, with a tile size of 10x10, just as the example images below. The example uses [Sketch](http://github.com/vydd/sketch) to display the dungeon graphically. Note that this requires having SDL2 installed on your operating system. Also note that the dungeon algorithm looks best with odd values for the dungeon width and height.
 
 ## Input
 
-Within the example window the follow input is accepted:
+Within the example window the following input is accepted:
 
 * Left mouse-click: Generate and display a new dungeon of the same size.
 * Right mouse-click: Toggle between terrain and region modes.
