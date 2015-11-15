@@ -12,7 +12,9 @@
    (w :reader w
       :initarg :w)
    (h :reader h
-      :initarg :h)))
+      :initarg :h)
+   (region :accessor region
+           :initform nil)))
 
 (defmethod initialize-instance :after ((o dungeon-room) &key)
   (with-slots (x1 x2 y1 y2 w h) o
@@ -33,15 +35,19 @@
             (values w h))))))
 
 (defmethod generate-room-location ((dungeon dungeon) width height)
-  (values (random (+ 1 (- (w dungeon) width)))
-          (random (+ 1 (- (h dungeon) height)))))
+  (with-slots (w h) dungeon
+    (let ((x (random (- w width)))
+          (y (random (- h height))))
+      (values (if (evenp x) (incf x) x)
+              (if (evenp y) (incf y) y)))))
 
 (defmethod add-to-dungeon ((room dungeon-room) (dungeon dungeon))
-  (with-slots (x1 x2 y1 y2) room
+  (with-slots (x1 x2 y1 y2 region) room
     (with-slots (data rooms) dungeon
       (loop for x from x1 below x2
             do (loop for y from y1 below y2
-                     do (setf (aref data x y) 2)))
+                     for tile = (make-tile :terrain :room :region region)
+                     do (setf (aref data x y) tile)))
       (push room rooms))))
 
 (defmethod create-room ((dungeon dungeon))
@@ -49,6 +55,7 @@
     (multiple-value-bind (x y) (generate-room-location dungeon w h)
       (let ((room (make-instance 'dungeon-room :x1 x :y1 y :w w :h h)))
         (unless (intersectsp room dungeon)
+          (setf (region room) (incf (current-region dungeon)))
           (add-to-dungeon room dungeon))))))
 
 (defmethod intersectsp ((new-room dungeon-room) (dungeon dungeon))

@@ -4,11 +4,8 @@
   (:use #:cl
         #:ax.misc.fs
         #:agl
-        #:sketch
-        #:sdl2.kit)
-  (:import-from #:alexandria
-                #:when-let)
-)
+        #:alexandria
+        #:sdl2.kit))
 
 (in-package :crawler)
 
