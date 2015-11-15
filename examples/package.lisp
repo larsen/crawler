@@ -15,6 +15,7 @@
                 #:h
                 #:data
                 #:terrain
-                #:region))
+                #:region)
+  (:export #:random-dungeon))
 
 (in-package :crawler-examples)
