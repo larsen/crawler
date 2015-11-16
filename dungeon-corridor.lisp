@@ -21,15 +21,13 @@
           for (nx ny nn) = (pop stack)
           do (loop while neighbors
                    for (u v) = (car neighbors)
-                   for tile1 = (aref data u v)
-                   for tile2 = (aref data (/ (+ x u) 2) (/ (+ y v) 2))
                    do (if (visitedp (aref data u v))
                           (setf neighbors (cdr neighbors))
                           (progn
-                            (setf (terrain tile1) :corridor
-                                  (terrain tile2) :corridor
-                                  (region tile1) current-region
-                                  (region tile2) current-region)
+                            (dolist (tile `(,(aref data u v)
+                                            ,(aref data (/ (+ x u) 2) (/ (+ y v) 2))))
+                              (setf (terrain tile) :corridor
+                                    (region tile) current-region))
                             (push `(,x ,y ,(cdr neighbors)) stack)
                             (setf neighbors (neighbors u v)
                                   x u
@@ -38,18 +36,3 @@
              (setf x nx
                    y ny
                    neighbors nn))))
-
-(defmethod carvablep ()
-  (with-slots (data) *dungeon*
-    (loop named out for x from 1 below (1- (array-dimension data 0))
-          do (loop for y from 1 below (1- (array-dimension data 1))
-                   do (when (and (eq (terrain (aref data x y)) :wall)
-                                 (eq (terrain (aref data (1- x) (1- y))) :wall)
-                                 (eq (terrain (aref data x (1- y))) :wall)
-                                 (eq (terrain (aref data (1+ x) (1- y))) :wall)
-                                 (eq (terrain (aref data (1- x) y)) :wall)
-                                 (eq (terrain (aref data (1+ x) y)) :wall)
-                                 (eq (terrain (aref data (1- x) (1+ y))) :wall)
-                                 (eq (terrain (aref data x (1+ y))) :wall)
-                                 (eq (terrain (aref data (1+ x) (1+ y))) :wall))
-                        (return-from out (list x y)))))))

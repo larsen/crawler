@@ -2,7 +2,6 @@
 
 (defpackage #:crawler-examples
   (:use #:cl
-        #:crawler
         #:sdl2.kit
         #:sketch)
   (:import-from #:alexandria
@@ -15,7 +14,8 @@
                 #:h
                 #:data
                 #:terrain
-                #:region)
+                #:region
+                #:connectorp)
   (:export #:random-dungeon))
 
 (in-package :crawler-examples)

@@ -24,7 +24,8 @@
     (setf *dungeon* (make-instance 'dungeon :w w :h h :tile-size tile-size :data data))
     (create-walls)
     (create-rooms max-tries density)
-    (create-corridors)))
+    (create-corridors)
+    (create-connectors)))
 
 (defun calculate-room-count (density)
   (with-slots (w h room-min-max) *dungeon*
@@ -48,8 +49,17 @@
         do (create-room *dungeon*)
            (incf tries)))
 
-(defun create-corridors ()
-  (loop for carvablep = (carvablep)
-        for (x y) = carvablep
-        while carvablep
-        do (carve x y)))
+(defmethod create-corridors ()
+  (with-slots (data) *dungeon*
+    (loop for x from 1 below (1- (array-dimension data 0))
+          do (loop for y from 1 below (1- (array-dimension data 1))
+                   do (when (and (eq (terrain (aref data x y)) :wall)
+                                 (eq (terrain (aref data (1- x) (1- y))) :wall)
+                                 (eq (terrain (aref data x (1- y))) :wall)
+                                 (eq (terrain (aref data (1+ x) (1- y))) :wall)
+                                 (eq (terrain (aref data (1- x) y)) :wall)
+                                 (eq (terrain (aref data (1+ x) y)) :wall)
+                                 (eq (terrain (aref data (1- x) (1+ y))) :wall)
+                                 (eq (terrain (aref data x (1+ y))) :wall)
+                                 (eq (terrain (aref data (1+ x) (1+ y))) :wall))
+                        (carve x y))))))

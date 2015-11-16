@@ -20,25 +20,35 @@
           (* (1+ y) tile-size))))
 
 (defmethod draw-tile ((attr (eql 'terrain)) x y)
-  (macrolet ((select-tile (x y &body body)
+  (macrolet ((select-pen (x y &body body)
                `(with-pen (case (terrain (aref (data *dungeon*) ,x ,y))
                             (:corridor (make-pen :stroke (gray 0) :fill (gray 1)))
                             (:room (make-pen :stroke (gray 0) :fill (rgb 0.1 0.5 1)))
                             (:wall (make-pen :fill (gray 0))))
                   ,@body)))
-    (select-tile x y (call-next-method))))
+    (select-pen x y (call-next-method))))
 
 (defmethod draw-tile ((attr (eql 'region)) x y)
-  (macrolet ((select-tile (x y &body body)
+  (macrolet ((select-pen (x y &body body)
                `(let* ((region (region (aref (data *dungeon*) ,x ,y)))
-                       (color (if (= region 0)
-                                  (gray 0)
+                       (color (if region
                                   (hsb-360 (* 10 (mod region 36))
                                            (* 50 (1+ (mod region 2)))
-                                           (* 50 (1+ (mod region 2)))))))
+                                           (* 50 (1+ (mod region 2))))
+                                  (gray 0))))
                   (with-pen (make-pen :stroke (gray 0) :fill color)
                     ,@body))))
-    (select-tile x y (call-next-method))))
+    (select-pen x y (call-next-method))
+    (draw-tile 'connector x y)))
+
+(defmethod draw-tile ((attr (eql 'connector)) x y)
+  (with-slots (data tile-size) *dungeon*
+    (when (connectorp (aref data x y))
+      (with-pen (make-pen :fill (rgb 1 0 0))
+        (ellipse (+ (/ tile-size 2) (* x tile-size))
+                 (+ (/ tile-size 2) (* y tile-size))
+                 2
+                 2)))))
 
 (defmethod mousebutton-event ((window random-dungeon) state ts button x y)
   (with-slots (w h tile-size) *dungeon*
