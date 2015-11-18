@@ -27,10 +27,8 @@
            (+ min (* 2 (random (floor (+ 2 (- max min)) 2))))))
     (with-slots (room-min-max) dungeon
       (let* ((w (apply #'random-size room-min-max))
-             (h (apply #'random-size room-min-max))
-             (min (min w h))
-             (max (max w h)))
-        (if (< (/ min max) (random 1.0))
+             (h (apply #'random-size room-min-max)))
+        (if (< (/ (min w h) (max w h)) (random 1.0))
             (generate-room-size dungeon)
             (values w h))))))
 

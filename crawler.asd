@@ -4,15 +4,10 @@
   :version "0.1"
   :license "MIT"
   :description "A dungeon exploration game."
-  :depends-on (#:ax.misc.fs
-               #:alexandria
-               #:ax.game
-               #:sdl2kit)
+  :depends-on (#:alexandria)
   :serial t
   :components ((:file "package")
                (:file "dungeon")
                (:file "dungeon-tile")
                (:file "dungeon-room")
-               (:file "dungeon-corridor")
-               (:file "game")
-               (:file "window")))
+               (:file "dungeon-corridor")))

@@ -20,12 +20,15 @@
          :initarg :data)))
 
 (defun make-dungeon (&key w h tile-size (max-tries 1000) (density 0.75))
-  (let ((data (make-array `(,w ,h))))
-    (setf *dungeon* (make-instance 'dungeon :w w :h h :tile-size tile-size :data data))
-    (create-walls)
-    (create-rooms max-tries density)
-    (create-corridors)
-    (create-connectors)))
+  (setf *dungeon* (make-instance 'dungeon
+                                 :w w
+                                 :h h
+                                 :tile-size tile-size
+                                 :data (make-array `(,w ,h))))
+  (create-walls)
+  (create-rooms max-tries density)
+  (create-corridors)
+  (create-connectors))
 
 (defun calculate-room-count (density)
   (with-slots (w h room-min-max) *dungeon*
@@ -36,9 +39,8 @@
       (floor (* possible-rooms density)))))
 
 (defun create-walls ()
-  (loop with (w h) = (array-dimensions (data *dungeon*))
-        for x below w
-        do (loop for y below h
+  (loop for x below (w *dungeon*)
+        do (loop for y below (h *dungeon*)
                  do (setf (aref (data *dungeon*) x y) (make-tile)))))
 
 (defun create-rooms (max-tries density)
@@ -50,9 +52,9 @@
            (incf tries)))
 
 (defmethod create-corridors ()
-  (with-slots (data) *dungeon*
-    (loop for x from 1 below (1- (array-dimension data 0))
-          do (loop for y from 1 below (1- (array-dimension data 1))
+  (with-slots (w h data) *dungeon*
+    (loop for x from 1 below (1- w)
+          do (loop for y from 1 below (1- h)
                    do (when (and (eq (terrain (aref data x y)) :wall)
                                  (eq (terrain (aref data (1- x) (1- y))) :wall)
                                  (eq (terrain (aref data x (1- y))) :wall)

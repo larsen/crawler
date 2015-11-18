@@ -1,16 +1,22 @@
 (in-package :crawler-examples)
 
-(defparameter *draw-mode* '(terrain region))
+(defparameter *draw-modes* '(terrain region))
 
 (defsketch random-dungeon (:title "Dungeon"
                            :width (* (tile-size *dungeon*) (w *dungeon*))
                            :height (* (tile-size *dungeon*) (h *dungeon*))
+                           :copy-pixels t
                            :debug :scancode-grave)
-    ()
-  (with-slots (w h tile-size) *dungeon*
-    (dotimes (x w)
-      (dotimes (y h)
-        (draw-tile (first *draw-mode*) x y)))))
+    ((updatedp nil))
+  (when (not updatedp)
+    (with-slots (w h tile-size) *dungeon*
+      (dotimes (x w)
+        (dotimes (y h)
+          (draw-tile (first *draw-modes*) x y))))
+    (setf updatedp t)))
+
+(define-sketch-setup random-dungeon
+  (background (gray 0)))
 
 (defmethod draw-tile (attr x y)
   (with-slots (tile-size) *dungeon*
@@ -47,16 +53,17 @@
       (with-pen (make-pen :fill (rgb 1 0 0))
         (ellipse (+ (/ tile-size 2) (* x tile-size))
                  (+ (/ tile-size 2) (* y tile-size))
-                 2
-                 2)))))
+                 (/ tile-size 5)
+                 (/ tile-size 5))))))
 
 (defmethod mousebutton-event ((window random-dungeon) state ts button x y)
   (with-slots (w h tile-size) *dungeon*
     (when (eq state :MOUSEBUTTONUP)
+      (setf (slot-value window 'updatedp) nil)
       (when (eql button 1)
         (make-dungeon :w w :h h :tile-size tile-size :density (+ 0.1 (random (- 0.75 0.1)))))
       (when (eql button 3)
-        (setf *draw-mode* (rotate *draw-mode* -1))))))
+        (setf *draw-modes* (rotate *draw-modes* -1))))))
 
 (defun random-dungeon (width height tile-size)
   (make-dungeon :w width :h height :tile-size tile-size)

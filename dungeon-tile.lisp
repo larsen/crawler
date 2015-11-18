@@ -17,9 +17,9 @@
     tile))
 
 (defun create-connectors ()
-  (with-slots (data) *dungeon*
-    (loop for x from 1 below (1- (array-dimension data 0))
-          do (loop for y from 1 below (1- (array-dimension data 1))
+  (with-slots (w h data) *dungeon*
+    (loop for x from 1 below (1- w)
+          do (loop for y from 1 below (1- h)
                    for tile = (aref data x y)
                    for n = (aref data x (1- y))
                    for s = (aref data x (1+ y))

@@ -5,8 +5,8 @@
   :license "MIT"
   :description "Examples for the Crawler game."
   :depends-on (#:crawler
-               #:sdl2kit
                #:sketch)
   :serial t
+  :pathname "examples"
   :components ((:file "package")
                (:file "random-dungeon")))

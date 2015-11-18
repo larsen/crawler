@@ -2,10 +2,7 @@
 
 (defpackage #:crawler
   (:use #:cl
-        #:ax.misc.fs
-        #:agl
-        #:alexandria
-        #:sdl2.kit))
+        #:alexandria))
 
 (in-package :crawler)
 

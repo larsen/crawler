@@ -3,8 +3,8 @@
 (defmethod neighbors (x y)
   (shuffle
    (remove-if-not
-    (lambda (x) (and (< -1 (first x) (array-dimension (data *dungeon*) 0))
-                (< -1 (second x) (array-dimension (data *dungeon*) 1))))
+    (lambda (x) (and (< -1 (first x) (w *dungeon*))
+                (< -1 (second x) (h *dungeon*))))
     `((,x ,(+ y 2))
       (,(- x 2) ,y)
       (,x ,(- y 2))
