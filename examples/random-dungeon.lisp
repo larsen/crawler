@@ -5,7 +5,6 @@
 (defsketch random-dungeon (:title "Dungeon"
                            :width (* (tile-size *dungeon*) (w *dungeon*))
                            :height (* (tile-size *dungeon*) (h *dungeon*))
-                           :copy-pixels t
                            :debug :scancode-grave)
     ((updatedp nil))
   (when (not updatedp)
@@ -29,6 +28,7 @@
   (macrolet ((select-pen (x y &body body)
                `(with-pen (case (terrain (aref (data *dungeon*) ,x ,y))
                             (:corridor (make-pen :stroke (gray 0) :fill (gray 1)))
+                            (:door (make-pen :stroke (gray 0) :fill (rgb 1 0 0)))
                             (:room (make-pen :stroke (gray 0) :fill (rgb 0.1 0.5 1)))
                             (:wall (make-pen :fill (gray 0))))
                   ,@body)))
@@ -64,6 +64,11 @@
         (make-dungeon :w w :h h :tile-size tile-size :density (+ 0.1 (random (- 0.75 0.1)))))
       (when (eql button 3)
         (setf *draw-modes* (rotate *draw-modes* -1))))))
+
+(defmethod keyboard-event ((window random-dungeon) state ts repeat-p keysym)
+  (when (eq state :KEYDOWN)
+    (case (sdl2:scancode keysym)
+      (:scancode-escape (close-window window)))))
 
 (defun random-dungeon (width height tile-size)
   (make-dungeon :w width :h height :tile-size tile-size)

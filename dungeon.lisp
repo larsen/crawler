@@ -12,6 +12,10 @@
               :initform 10)
    (rooms :accessor rooms
           :initform nil)
+   (regions :accessor regions
+            :initform (make-hash-table))
+   (connectors :accessor connectors
+               :initform (make-hash-table :test #'equal))
    (room-min-max :reader room-min-max
                  :initform '(5 13))
    (current-region :accessor current-region
@@ -20,11 +24,13 @@
          :initarg :data)))
 
 (defun make-dungeon (&key w h tile-size (max-tries 1000) (density 0.75))
-  (setf *dungeon* (make-instance 'dungeon
-                                 :w w
-                                 :h h
-                                 :tile-size tile-size
-                                 :data (make-array `(,w ,h))))
+  (let ((w (if (evenp w) (1+ w) w))
+        (h (if (evenp h) (1+ h) h)))
+    (setf *dungeon* (make-instance 'dungeon
+                                   :w w
+                                   :h h
+                                   :tile-size tile-size
+                                   :data (make-array `(,w ,h)))))
   (create-walls)
   (create-rooms max-tries density)
   (create-corridors)
@@ -41,7 +47,7 @@
 (defun create-walls ()
   (loop for x below (w *dungeon*)
         do (loop for y below (h *dungeon*)
-                 do (setf (aref (data *dungeon*) x y) (make-tile)))))
+                 do (setf (aref (data *dungeon*) x y) (make-tile x y)))))
 
 (defun create-rooms (max-tries density)
   (loop with rooms = (calculate-room-count density)
@@ -51,17 +57,9 @@
         do (create-room *dungeon*)
            (incf tries)))
 
+(defun carvablep (tile &optional n ne e se s sw w nw)
+  (every #'(lambda (x) (eq x :wall))
+         (list (terrain tile) n ne e se s sw w nw)))
+
 (defmethod create-corridors ()
-  (with-slots (w h data) *dungeon*
-    (loop for x from 1 below (1- w)
-          do (loop for y from 1 below (1- h)
-                   do (when (and (eq (terrain (aref data x y)) :wall)
-                                 (eq (terrain (aref data (1- x) (1- y))) :wall)
-                                 (eq (terrain (aref data x (1- y))) :wall)
-                                 (eq (terrain (aref data (1+ x) (1- y))) :wall)
-                                 (eq (terrain (aref data (1- x) y)) :wall)
-                                 (eq (terrain (aref data (1+ x) y)) :wall)
-                                 (eq (terrain (aref data (1- x) (1+ y))) :wall)
-                                 (eq (terrain (aref data x (1+ y))) :wall)
-                                 (eq (terrain (aref data (1+ x) (1+ y))) :wall))
-                        (carve x y))))))
+  (on-tile-map #'carvablep #'terrain #'carve))
