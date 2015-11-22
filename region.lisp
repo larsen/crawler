@@ -50,6 +50,7 @@
 (defun merge-region (region-id)
   (let* ((connector (open-connector region-id))
          (connected (get-connected-region region-id connector)))
+    (setf (region-id connector) connected)
     (if (< (random 1.0) 0.05)
         (merge-region region-id)
         (progn

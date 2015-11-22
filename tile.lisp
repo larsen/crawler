@@ -70,7 +70,8 @@
 (defun make-wall (tile &optional n ne e se s sw w nw)
   (declare (ignore n ne e se s sw w nw))
   (setf (dead-ends-p *dungeon*) t)
-  (setf (terrain tile) :wall))
+  (setf (terrain tile) :wall)
+  (setf (region-id tile) nil))
 
 (defclass region ()
   ((id :reader id
