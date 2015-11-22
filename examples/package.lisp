@@ -14,7 +14,7 @@
                 #:h
                 #:data
                 #:terrain
-                #:region
+                #:region-id
                 #:connectorp)
   (:export #:random-dungeon))
 

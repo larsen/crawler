@@ -30,13 +30,14 @@
                             (:corridor (make-pen :stroke (gray 0) :fill (gray 1)))
                             (:door (make-pen :stroke (gray 0) :fill (rgb 1 0 0)))
                             (:room (make-pen :stroke (gray 0) :fill (rgb 0.1 0.5 1)))
-                            (:wall (make-pen :fill (gray 0))))
+                            (:region (make-pen :stroke (gray 0) :fill (rgb 0 1 0)))
+                            (:wall (make-pen :stroke (gray 0) :fill (gray 0))))
                   ,@body)))
     (select-pen x y (call-next-method))))
 
 (defmethod draw-tile ((attr (eql 'region)) x y)
   (macrolet ((select-pen (x y &body body)
-               `(let* ((region (region (aref (data *dungeon*) ,x ,y)))
+               `(let* ((region (region-id (aref (data *dungeon*) ,x ,y)))
                        (color (if region
                                   (hsb-360 (* 10 (mod region 36))
                                            (* 50 (1+ (mod region 2)))

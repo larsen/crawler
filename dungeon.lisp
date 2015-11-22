@@ -20,6 +20,8 @@
                  :initform '(5 13))
    (current-region :accessor current-region
                    :initform 0)
+   (dead-ends-p :accessor dead-ends-p
+                :initform t)
    (data :accessor data
          :initarg :data)))
 
@@ -34,7 +36,9 @@
   (create-walls)
   (create-rooms max-tries density)
   (create-corridors)
-  (create-connectors))
+  (create-connectors)
+  (merge-all)
+  (remove-dead-ends))
 
 (defun calculate-room-count (density)
   (with-slots (w h room-min-max) *dungeon*

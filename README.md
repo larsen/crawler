@@ -31,6 +31,7 @@ Terrain Mode displays each 'terrain' in a different color. There are three types
 * Black: Walls
 * White: Corridors
 * Blue: Rooms
+* Red: Doors
 
 Region Mode displays each unconnected area in a different color. This means each room is a different color, and possibly different parts of the winding corridors. Also, possible locations for a door are marked with a red circle. These are walls that are connecting 2 different regions.
 
@@ -46,4 +47,10 @@ Region Mode displays each unconnected area in a different color. This means each
 
 ## TODO
 
-As mentioned, this project is very incomplete. If you paid attention, you probably noticed that there is no way to get to all areas of the dungeon. This is because corridors have not yet been connected to rooms. This is the primary feature that needs implementing, though there are many more ideas planned. If you have another suggestion, just let me know, and I'll see if it makes sense to implement.
+As mentioned, this project is very incomplete. The following is a list of features to add:
+
+* Make corridors be less windy.
+* Enforce extra doors to not be adjacent to existing doors.
+* Many more fixes.
+
+If you have another suggestion, just let me know, and I'll see if it makes sense to implement.

@@ -8,6 +8,7 @@
   :serial t
   :components ((:file "package")
                (:file "dungeon")
-               (:file "dungeon-tile")
-               (:file "dungeon-room")
-               (:file "dungeon-corridor")))
+               (:file "tile")
+               (:file "room")
+               (:file "corridor")
+               (:file "region")))
