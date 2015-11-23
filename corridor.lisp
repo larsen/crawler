@@ -26,7 +26,7 @@
             do (loop while neighbors
                      for (u v) = (car neighbors)
                      do (if (visitedp (aref data u v))
-                            (setf neighbors (cdr neighbors))
+                            (pop neighbors)
                             (progn
                               (dolist (to-carve `(,(aref data u v)
                                                   ,(aref data (/ (+ x u) 2) (/ (+ y v) 2))))

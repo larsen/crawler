@@ -69,66 +69,6 @@
 
 (defun make-wall (tile &optional n ne e se s sw w nw)
   (declare (ignore n ne e se s sw w nw))
-  (setf (dead-ends-p *dungeon*) t)
-  (setf (terrain tile) :wall)
-  (setf (region-id tile) nil))
-
-(defclass region ()
-  ((id :reader id
-       :initarg :id
-       :initform nil)
-   (mergedp :accessor mergedp
-            :initform nil)
-   (adjacent :accessor adjacent
-             :initform nil)
-   (connectors :accessor connectors
-               :initform nil)
-   (tiles :accessor tiles
-          :initform nil)))
-
-(defun get-region (id)
-  (gethash id (regions *dungeon*)))
-
-(defun random-connector (region-id)
-  (with-slots (connectors) (get-region region-id)
-    (elt connectors (random (length connectors)))))
-
-(defun open-connector (region-id)
-  (let ((connector (random-connector region-id)))
-    (setf (terrain connector) :door)
-    connector))
-
-(defun get-connected-region (region-id connector)
-  (first (remove region-id (connectorp connector))))
-
-(defun draw-merged (region-id)
-  (dolist (tile (tiles (get-region region-id)))
-    (setf (terrain tile) :region)))
-
-(defun remove-extra-connectors (region-id connected-id)
-  (dolist (connector (connectors (get-region region-id)))
-    (when (and (member region-id (connectorp connector))
-               (member connected-id (connectorp connector)))
-      (setf (connectorp connector) nil)
-      (deletef (connectors (get-region region-id)) connector)
-      (deletef (connectors (get-region connected-id)) connector))))
-
-(defun move-connectors (from to)
-  (let ((from-region (get-region from))
-        (to-region (get-region to)))
-    (dolist (connector (connectors from-region))
-      (with-slots (connectorp) connector
-        (setf connectorp (substitute to from connectorp))
-        (push connector (connectors to-region))))))
-
-(defun merge-region (region-id)
-  (let ((merged (get-connected-region region-id (open-connector region-id))))
-    (remove-extra-connectors region-id merged)
-    (move-connectors merged region-id)
-    (draw-merged merged)))
-
-(defun merge-all (region-id)
-  (draw-merged region-id)
-  (loop with region = (get-region region-id)
-        while (connectors region)
-        do (merge-region region-id)))
+  (setf (dead-ends-p *dungeon*) t
+        (terrain tile) :wall
+        (region-id tile) nil))

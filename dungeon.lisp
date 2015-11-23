@@ -17,15 +17,20 @@
    (connectors :accessor connectors
                :initform (make-hash-table :test #'equal))
    (room-min-max :reader room-min-max
-                 :initform '(5 13))
+                 :initform '(3 11))
    (current-region :accessor current-region
                    :initform 0)
    (dead-ends-p :accessor dead-ends-p
                 :initform t)
+   (extra-door-chance :reader extra-door-change
+                      :initform 0.2)
    (data :accessor data
          :initarg :data)))
 
-(defun make-dungeon (&key w h tile-size (max-tries 1000) (density 0.75))
+(defun make-dungeon (&key w h tile-size
+                       (max-tries 1000)
+                       (density 0.75)
+                       (extra-door-chance 0.2))
   (let ((w (if (evenp w) (1+ w) w))
         (h (if (evenp h) (1+ h) h)))
     (setf *dungeon* (make-instance 'dungeon
@@ -37,7 +42,7 @@
   (create-rooms max-tries density)
   (create-corridors)
   (create-connectors)
-  (merge-all)
+  (merge-regions extra-door-chance)
   (remove-dead-ends))
 
 (defun calculate-room-count (density)

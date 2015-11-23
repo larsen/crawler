@@ -14,19 +14,10 @@
 
 (defun random-connector (region-id)
   (with-slots (connectors) (get-region region-id)
-    (elt connectors (random (length connectors)))))
-
-(defun open-connector (region-id)
-  (let ((connector (random-connector region-id)))
-    (setf (terrain connector) :door)
-    connector))
+    (first (shuffle connectors))))
 
 (defun get-connected-region (region-id connector)
   (first (remove region-id (connectorp connector))))
-
-(defun draw-merged (region-id)
-  (dolist (tile (tiles (get-region region-id)))
-    (setf (terrain tile) :region)))
 
 (defun remove-extra-connectors (region-id connected-id)
   (let ((region (get-region region-id))
@@ -47,19 +38,31 @@
         (setf connectorp (substitute to from connectorp))
         (push connector (connectors to-region))))))
 
-(defun merge-region (region-id)
-  (let* ((connector (open-connector region-id))
-         (connected (get-connected-region region-id connector)))
-    (setf (region-id connector) connected)
-    (if (< (random 1.0) 0.05)
-        (merge-region region-id)
-        (progn
-          (remove-extra-connectors region-id connected)
-          (move-connectors connected region-id)))))
+(defun adjacent-door-p (tile)
+  (with-slots (data) *dungeon*
+    (with-slots (x y) tile
+      (or (eq (terrain (aref data x (1- y))) :door)
+          (eq (terrain (aref data x (1+ y))) :door)
+          (eq (terrain (aref data (1- x) y)) :door)
+          (eq (terrain (aref data (1+ x) y)) :door)))))
 
-(defun merge-all ()
+(defun merge-region (region-id door chance)
+  (let* ((connected (get-connected-region region-id door))
+         (extra-door (random-connector region-id)))
+    (unless (adjacent-door-p door)
+      (setf (region-id door) connected
+            (terrain door) :door)
+      (if (and (< (random 1.0) chance)
+               (not (adjacent-door-p extra-door)))
+          (merge-region region-id extra-door chance)
+          (progn
+            (remove-extra-connectors region-id connected)
+            (move-connectors connected region-id))))))
+
+(defun merge-regions (extra-door-chance)
   (with-slots (regions) *dungeon*
     (let* ((region-count (length (hash-table-keys regions)))
            (region (gethash (1+ (random region-count)) regions)))
       (loop while (connectors region)
-            do (merge-region (id region))))))
+            for door = (random-connector (id region))
+            do (merge-region (id region) door extra-door-chance)))))
