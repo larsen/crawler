@@ -50,7 +50,7 @@ Region Mode displays each unconnected area in a different color. This means each
 As mentioned, this project is very incomplete. The following is a list of features to add:
 
 * Make corridors be less windy.
-* Enforce extra doors to not be adjacent to existing doors.
+* ~~Enforce extra doors to not be adjacent to existing doors.~~
 * Many more fixes.
 
 If you have another suggestion, just let me know, and I'll see if it makes sense to implement.
