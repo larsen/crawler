@@ -2,7 +2,16 @@
 
 (defpackage #:crawler
   (:use #:cl
-        #:alexandria))
+        #:alexandria)
+  (:export #:make-dungeon
+           #:*dungeon*
+           #:width
+           #:height
+           #:data
+           #:tile-size
+           #:terrain
+           #:region-id
+           #:connectorp))
 
 (in-package :crawler)
 

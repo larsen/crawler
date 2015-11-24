@@ -46,23 +46,14 @@
           (eq (terrain (aref data (1- x) y)) :door)
           (eq (terrain (aref data (1+ x) y)) :door)))))
 
-(defun merge-region (region-id door chance)
+(defun merge-region (region-id door)
   (let* ((connected (get-connected-region region-id door))
          (extra-door (random-connector region-id)))
     (unless (adjacent-door-p door)
       (setf (region-id door) connected
             (terrain door) :door)
-      (if (and (< (random 1.0) chance)
-               (not (adjacent-door-p extra-door)))
-          (merge-region region-id extra-door chance)
+      (if (< (random 1.0) (door-rate *dungeon*))
+          (merge-region region-id extra-door)
           (progn
             (remove-extra-connectors region-id connected)
             (move-connectors connected region-id))))))
-
-(defun merge-regions (extra-door-chance)
-  (with-slots (regions) *dungeon*
-    (let* ((region-count (length (hash-table-keys regions)))
-           (region (gethash (1+ (random region-count)) regions)))
-      (loop while (connectors region)
-            for door = (random-connector (id region))
-            do (merge-region (id region) door extra-door-chance)))))

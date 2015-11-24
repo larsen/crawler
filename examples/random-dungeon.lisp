@@ -3,14 +3,14 @@
 (defparameter *draw-modes* '(terrain region))
 
 (defsketch random-dungeon (:title "Dungeon"
-                           :width (* (tile-size *dungeon*) (w *dungeon*))
-                           :height (* (tile-size *dungeon*) (h *dungeon*))
+                           :width (* (tile-size *dungeon*) (width *dungeon*))
+                           :height (* (tile-size *dungeon*) (height *dungeon*))
                            :debug :scancode-grave)
     ((updatedp nil))
   (when (not updatedp)
-    (with-slots (w h tile-size) *dungeon*
-      (dotimes (x w)
-        (dotimes (y h)
+    (with-slots (width height tile-size) *dungeon*
+      (dotimes (x width)
+        (dotimes (y height)
           (draw-tile (first *draw-modes*) x y))))
     (setf updatedp t)))
 
@@ -57,13 +57,13 @@
                  (/ tile-size 5))))))
 
 (defmethod mousebutton-event ((window random-dungeon) state ts button x y)
-  (with-slots (w h tile-size) *dungeon*
+  (with-slots (width height tile-size) *dungeon*
     (when (eq state :MOUSEBUTTONUP)
       (setf (slot-value window 'updatedp) nil)
       (when (eql button 1)
-        (make-dungeon :w w :h h :tile-size tile-size))
+        (make-dungeon :w width :h height :tile-size tile-size))
       (when (eql button 3)
-        (setf *draw-modes* (rotate *draw-modes* -1))))))
+        (setf *draw-modes* (rotate *draw-modes*))))))
 
 (defmethod keyboard-event ((window random-dungeon) state ts repeat-p keysym)
   (when (eq state :KEYDOWN)

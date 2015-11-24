@@ -3,72 +3,80 @@
 (defvar *dungeon* nil)
 
 (defclass dungeon ()
-  ((w :reader w
-      :initarg :w)
-   (h :reader h
-      :initarg :h)
+  ((width :reader width
+          :initarg :w)
+   (height :reader height
+           :initarg :h)
    (tile-size :reader tile-size
-              :initarg :tile-size
-              :initform 10)
+              :initarg :tile-size)
    (rooms :accessor rooms
           :initform nil)
    (regions :accessor regions
             :initform (make-hash-table))
-   (connectors :accessor connectors
-               :initform (make-hash-table :test #'equal))
    (room-min-max :reader room-min-max
                  :initform '(3 11))
    (current-region :accessor current-region
                    :initform 0)
    (dead-ends-p :accessor dead-ends-p
                 :initform t)
-   (extra-door-chance :reader extra-door-change
-                      :initform 0.2)
+   (room-density :reader room-density
+                 :initarg :room-density)
+   (door-rate :reader door-rate
+              :initarg :door-rate)
    (data :accessor data
          :initarg :data)))
 
-(defun make-dungeon (&key w h tile-size
-                       (max-tries 1000)
-                       (density 0.75)
-                       (extra-door-chance 0.2))
+(defun make-dungeon (&key w h
+                       (tile-size 10)
+                       (room-density 0.75)
+                       (door-rate 0.2))
   (let ((w (if (evenp w) (1+ w) w))
         (h (if (evenp h) (1+ h) h)))
     (setf *dungeon* (make-instance 'dungeon
                                    :w w
                                    :h h
                                    :tile-size tile-size
-                                   :data (make-array `(,w ,h)))))
+                                   :data (make-array `(,w ,h))
+                                   :room-density room-density
+                                   :door-rate door-rate)))
   (create-walls)
-  (create-rooms max-tries density)
+  (create-rooms)
   (create-corridors)
   (create-connectors)
-  (merge-regions extra-door-chance)
+  (combine-dungeon)
   (remove-dead-ends))
 
-(defun calculate-room-count (density)
-  (with-slots (w h room-min-max) *dungeon*
-    (let* ((smallest-area (* (expt (first room-min-max) 2)))
-           (largest-area (* (expt (second room-min-max) 2)))
-           (average-area (/ (abs (- largest-area smallest-area)) 2))
-           (possible-rooms (/ (* w h) average-area)))
-      (floor (* possible-rooms density)))))
-
 (defun create-walls ()
-  (loop for x below (w *dungeon*)
-        do (loop for y below (h *dungeon*)
-                 do (setf (aref (data *dungeon*) x y) (make-tile x y)))))
+  (with-slots (width height data) *dungeon*
+    (loop for x below width
+          do (loop for y below height
+                   do (setf (aref data x y) (make-tile x y))))))
 
-(defun create-rooms (max-tries density)
-  (loop with rooms = (calculate-room-count density)
-        with tries = 0
-        until (or (= (length (rooms *dungeon*)) rooms)
-                  (>= tries max-tries))
-        do (create-room *dungeon*)
-           (incf tries)))
-
-(defun carvablep (tile &optional n ne e se s sw w nw)
-  (every #'(lambda (x) (eq x :wall))
-         (list (terrain tile) n ne e se s sw w nw)))
+(defun create-rooms ()
+  (with-slots (room-density rooms) *dungeon*
+    (loop with max-room = (calculate-room-count room-density)
+          with tries = 0
+          until (or (= (length rooms) max-room)
+                    (>= tries 1000))
+          do (create-room)
+             (incf tries))))
 
 (defmethod create-corridors ()
   (on-tile-map #'carvablep #'terrain #'carve))
+
+(defun create-connectors ()
+  (on-tile-map #'possible-connector-p #'region-id #'add-connector))
+
+(defun combine-dungeon ()
+  (with-slots (regions) *dungeon*
+    (let* ((region-count (length (hash-table-keys regions)))
+           (region (gethash (1+ (random region-count)) regions)))
+      (loop while (connectors region)
+            for door = (random-connector (id region))
+            do (merge-region (id region) door)))))
+
+(defun remove-dead-ends ()
+  (with-slots (dead-ends-p) *dungeon*
+    (loop while dead-ends-p
+          do (setf dead-ends-p nil)
+             (on-tile-map #'dead-end-p #'terrain #'make-wall))))
