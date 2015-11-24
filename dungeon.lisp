@@ -54,9 +54,9 @@
 
 (defun create-rooms ()
   (with-slots (room-density rooms) *dungeon*
-    (loop with max-room = (calculate-room-count room-density)
+    (loop with max-rooms = (calculate-room-count room-density)
           with tries = 0
-          until (or (= (length rooms) max-room)
+          until (or (= (length rooms) max-rooms)
                     (>= tries 1000))
           do (create-room)
              (incf tries))))
@@ -69,11 +69,11 @@
 
 (defun combine-dungeon ()
   (with-slots (regions) *dungeon*
-    (let* ((region-count (length (hash-table-keys regions)))
-           (region (gethash (1+ (random region-count)) regions)))
-      (loop while (connectors region)
-            for door = (random-connector (id region))
-            do (merge-region (id region) door)))))
+    (loop with region-count = (length (hash-table-keys regions))
+          with region = (gethash (1+ (random region-count)) regions)
+          while (connectors region)
+          for door = (random-connector (id region))
+          do (merge-region (id region) door))))
 
 (defun remove-dead-ends ()
   (with-slots (dead-ends-p) *dungeon*

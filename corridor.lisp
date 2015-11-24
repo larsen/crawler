@@ -20,7 +20,7 @@
     (with-slots (data regions current-region) *dungeon*
       (with-slots (x y visitedp terrain region-id) tile
         (setf visitedp t
-              terrain :corridor
+              terrain :floor
               region-id (incf current-region)
               (gethash region-id regions) (make-instance 'region :id region-id))
         (push tile (tiles (gethash region-id regions)))
@@ -35,7 +35,7 @@
                               (progn
                                 (dolist (to-carve `(,(aref data u v)
                                                     ,(aref data (/ (+ x u) 2) (/ (+ y v) 2))))
-                                  (setf (terrain to-carve) :corridor
+                                  (setf (terrain to-carve) :floor
                                         (region-id to-carve) current-region)
                                   (push to-carve (tiles (gethash region-id regions))))
                                 (push `(,x ,y ,(cdr neighbors)) stack)

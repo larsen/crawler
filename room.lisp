@@ -52,7 +52,7 @@
     (with-slots (data rooms regions) *dungeon*
       (loop for x from x1 below x2
             do (loop for y from y1 below y2
-                     for tile = (make-tile x y :terrain :room :region-id region-id)
+                     for tile = (make-tile x y :terrain :floor :region-id region-id)
                      do (setf (aref data x y) tile)
                         (push tile (tiles (gethash region-id regions)))))
       (push room rooms))))

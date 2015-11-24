@@ -11,8 +11,6 @@
               :initarg :region-id)
    (visitedp :accessor visitedp
              :initform nil)
-   (doorp :accessor doorp
-          :initform nil)
    (connectorp :accessor connectorp
                :initform nil)))
 
@@ -44,7 +42,7 @@
 
 (defun make-tile (x y &key (terrain :wall) region-id)
   (let ((tile (make-instance 'tile :x x :y y :terrain terrain :region-id region-id)))
-    (when (eq (terrain tile) :room)
+    (when (eq (terrain tile) :floor)
       (setf (visitedp tile) t))
     tile))
 
@@ -86,7 +84,7 @@
                  #'(lambda (x) (eq x :wall))
                  (list n s e w))))
       (and (not (eq (terrain tile) :wall))
-           (= (length dirs) 3)))))
+           (>= (length dirs) 3)))))
 
 (defun make-wall (tile neighbors)
   (with-slots (n s e w nw ne se sw) neighbors
