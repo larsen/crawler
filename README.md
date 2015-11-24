@@ -28,9 +28,8 @@ Within the example window the following input is accepted:
 
 Terrain Mode displays each 'terrain' in a different color. There are three types of terrain:
 
-* Black: Walls
-* White: Corridors
-* Blue: Rooms
+* Gray: Walls
+* Blue: Corridors
 * Red: Doors
 
 Region Mode displays each unconnected area in a different color. This means each room is a different color, and possibly different parts of the winding corridors. Also, possible locations for a door are marked with a red circle. These are walls that are connecting 2 different regions.
