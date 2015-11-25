@@ -7,11 +7,11 @@
            #:*dungeon*
            #:width
            #:height
-           #:data
+           #:tile-map
            #:tile-size
-           #:terrain
+           #:walkablep
            #:region-id
-           #:connectorp))
+           #:attrs))
 
 (in-package :crawler)
 

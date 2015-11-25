@@ -49,11 +49,11 @@
 
 (defmethod add-to-dungeon ((room dungeon-room))
   (with-slots (x1 x2 y1 y2 region-id) room
-    (with-slots (data rooms regions) *dungeon*
+    (with-slots (tile-map rooms regions) *dungeon*
       (loop for x from x1 below x2
             do (loop for y from y1 below y2
-                     for tile = (make-tile x y :terrain :floor :region-id region-id)
-                     do (setf (aref data x y) tile)
+                     for tile = (make-tile x y :walkablep t :region-id region-id)
+                     do (setf (aref tile-map x y) tile)
                         (push tile (tiles (gethash region-id regions)))))
       (push room rooms))))
 

@@ -21,10 +21,16 @@
                 :initform t)
    (room-density :reader room-density
                  :initarg :room-density)
+   (doors :accessor doors
+          :initform nil)
    (door-rate :reader door-rate
               :initarg :door-rate)
-   (data :accessor data
-         :initarg :data)))
+   (visitedp :accessor visitedp
+             :initform nil)
+   (connectors :accessor connectors
+               :initform (make-hash-table))
+   (tile-map :accessor tile-map
+             :initarg :tile-map)))
 
 (defun make-dungeon (&key w h
                        (tile-size 10)
@@ -36,7 +42,7 @@
                                    :w w
                                    :h h
                                    :tile-size tile-size
-                                   :data (make-array `(,w ,h))
+                                   :tile-map (make-array `(,w ,h))
                                    :room-density room-density
                                    :door-rate door-rate)))
   (create-walls)
@@ -47,10 +53,10 @@
   (remove-dead-ends))
 
 (defun create-walls ()
-  (with-slots (width height data) *dungeon*
+  (with-slots (width height tile-map) *dungeon*
     (loop for x below width
           do (loop for y below height
-                   do (setf (aref data x y) (make-tile x y))))))
+                   do (setf (aref tile-map x y) (make-tile x y))))))
 
 (defun create-rooms ()
   (with-slots (room-density rooms) *dungeon*
@@ -62,7 +68,7 @@
              (incf tries))))
 
 (defmethod create-corridors ()
-  (on-tile-map #'carvablep #'terrain #'carve))
+  (on-tile-map #'carvablep #'walkablep #'carve))
 
 (defun create-connectors ()
   (on-tile-map #'possible-connector-p #'region-id #'add-connector))
@@ -79,4 +85,4 @@
   (with-slots (dead-ends-p) *dungeon*
     (loop while dead-ends-p
           do (setf dead-ends-p nil)
-             (on-tile-map #'dead-end-p #'terrain #'make-wall))))
+             (on-tile-map #'dead-end-p #'walkablep #'make-wall))))

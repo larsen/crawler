@@ -16,42 +16,42 @@
   (with-slots (connectors) (get-region region-id)
     (first (shuffle connectors))))
 
-(defun get-connected-region (region-id connector)
-  (first (remove region-id (connectorp connector))))
+(defun get-connected-region (region-id tile)
+  (first (remove region-id (gethash tile (connectors *dungeon*)))))
 
 (defun remove-extra-connectors (region-id connected-id)
   (let ((region (get-region region-id))
         (connected (get-region connected-id)))
-    (dolist (connector (connectors region))
-      (with-slots (connectorp) connector
-        (when (and (member region-id connectorp)
-                   (member connected-id connectorp))
-          (setf connectorp nil)
-          (deletef (connectors region) connector)
-          (deletef (connectors connected) connector))))))
+    (dolist (tile (connectors region))
+      (let ((connector (gethash tile (connectors *dungeon*))))
+        (when (and (member region-id connector)
+                   (member connected-id connector))
+          (deletef (connectors region) tile)
+          (deletef (connectors connected) tile))))))
 
 (defun move-connectors (from to)
   (let ((from-region (get-region from))
         (to-region (get-region to)))
-    (dolist (connector (connectors from-region))
-      (with-slots (connectorp) connector
-        (setf connectorp (substitute to from connectorp))
-        (push connector (connectors to-region))))))
+    (dolist (tile (connectors from-region))
+      (setf (gethash tile (connectors *dungeon*))
+            (substitute to from (gethash tile (connectors *dungeon*))))
+      (push tile (connectors to-region)))))
 
 (defun adjacent-door-p (tile)
-  (with-slots (data) *dungeon*
+  (with-slots (tile-map doors) *dungeon*
     (with-slots (x y) tile
-      (or (eq (terrain (aref data x (1- y))) :door)
-          (eq (terrain (aref data x (1+ y))) :door)
-          (eq (terrain (aref data (1- x) y)) :door)
-          (eq (terrain (aref data (1+ x) y)) :door)))))
+      (or (member (aref tile-map x (1- y)) doors)
+          (member (aref tile-map x (1+ y)) doors)
+          (member (aref tile-map (1- x) y) doors)
+          (member (aref tile-map (1+ x) y) doors)))))
 
 (defun merge-region (region-id door)
   (let* ((connected (get-connected-region region-id door))
          (extra-door (random-connector region-id)))
     (unless (adjacent-door-p door)
       (setf (region-id door) connected
-            (terrain door) :door)
+            (walkablep door) t)
+      (push door (doors *dungeon*))
       (if (< (random 1.0) (door-rate *dungeon*))
           (merge-region region-id extra-door)
           (progn

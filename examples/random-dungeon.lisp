@@ -1,6 +1,6 @@
 (in-package :crawler-examples)
 
-(defparameter *draw-modes* '(terrain region))
+(defparameter *draw-modes* '(walkable region))
 
 (defsketch random-dungeon (:title "Dungeon"
                            :width (* (tile-size *dungeon*) (width *dungeon*))
@@ -24,18 +24,17 @@
           (- tile-size 1)
           (- tile-size 1))))
 
-(defmethod draw-tile ((attr (eql 'terrain)) x y)
+(defmethod draw-tile ((attr (eql 'walkable)) x y)
   (macrolet ((select-pen (x y &body body)
-               `(with-pen (case (terrain (aref (data *dungeon*) ,x ,y))
-                            (:floor (make-pen :fill (rgb 0.1 0.5 1)))
-                            (:door (make-pen :fill (rgb 0.5 0.1 0.1)))
-                            (t (make-pen :fill (gray 0.2))))
+               `(with-pen (if (walkablep (aref (tile-map *dungeon*) ,x ,y))
+                              (make-pen :fill (rgb 0.1 0.5 1))
+                              (make-pen :fill (gray 0.2)))
                   ,@body)))
     (select-pen x y (call-next-method))))
 
 (defmethod draw-tile ((attr (eql 'region)) x y)
   (macrolet ((select-pen (x y &body body)
-               `(let* ((region (region-id (aref (data *dungeon*) ,x ,y)))
+               `(let* ((region (region-id (aref (tile-map *dungeon*) ,x ,y)))
                        (color (if region
                                   (hsb-360 (* 10 (mod region 36))
                                            (* 50 (1+ (mod region 2)))
@@ -43,17 +42,7 @@
                                   (gray 0.2))))
                   (with-pen (make-pen :fill color)
                     ,@body))))
-    (select-pen x y (call-next-method))
-    (draw-tile 'connector x y)))
-
-(defmethod draw-tile ((attr (eql 'connector)) x y)
-  (with-slots (data tile-size) *dungeon*
-    (when (connectorp (aref data x y))
-      (with-pen (make-pen :fill (rgb 1 0 0))
-        (ellipse (+ (/ tile-size 2) (* x tile-size))
-                 (+ (/ tile-size 2) (* y tile-size))
-                 (/ tile-size 5)
-                 (/ tile-size 5))))))
+    (select-pen x y (call-next-method))))
 
 (defmethod mousebutton-event ((window random-dungeon) state ts button x y)
   (with-slots (width height tile-size) *dungeon*
