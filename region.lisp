@@ -14,7 +14,7 @@
 
 (defun random-connector (region-id)
   (with-slots (connectors) (get-region region-id)
-    (first (shuffle connectors))))
+    (random-elt connectors)))
 
 (defun get-connected-region (region-id tile)
   (first (remove region-id (gethash tile (connectors *dungeon*)))))
@@ -49,7 +49,7 @@
   (let* ((connected (get-connected-region region-id door))
          (extra-door (random-connector region-id)))
     (unless (adjacent-door-p door)
-      (setf (region-id door) connected
+      (setf (region-id door) 0
             (walkablep door) t)
       (push door (doors *dungeon*))
       (if (< (random 1.0) (door-rate *dungeon*))

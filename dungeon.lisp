@@ -25,8 +25,8 @@
           :initform nil)
    (door-rate :reader door-rate
               :initarg :door-rate)
-   (visitedp :accessor visitedp
-             :initform nil)
+   (windiness :reader windiness
+              :initarg :windiness)
    (connectors :accessor connectors
                :initform (make-hash-table))
    (tile-map :accessor tile-map
@@ -35,6 +35,7 @@
 (defun make-dungeon (&key w h
                        (tile-size 10)
                        (room-density 0.75)
+                       (windiness 0)
                        (door-rate 0.2))
   (let ((w (if (evenp w) (1+ w) w))
         (h (if (evenp h) (1+ h) h)))
@@ -44,6 +45,7 @@
                                    :tile-size tile-size
                                    :tile-map (make-array `(,w ,h))
                                    :room-density room-density
+                                   :windiness windiness
                                    :door-rate door-rate)))
   (create-walls)
   (create-rooms)
@@ -86,3 +88,7 @@
     (loop while dead-ends-p
           do (setf dead-ends-p nil)
              (on-tile-map #'dead-end-p #'walkablep #'make-wall))))
+
+(defun test ()
+  (with-slots (width height tile-map) *dungeon*
+    (make-array (* width height) :displaced-to tile-map)))

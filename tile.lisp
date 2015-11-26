@@ -18,10 +18,7 @@
   n s e w nw ne se sw)
 
 (defun make-tile (x y &key walkablep region-id)
-  (let ((tile (make-instance 'tile :x x :y y :walkablep walkablep :region-id region-id)))
-    (when (walkablep tile)
-      (push tile (visitedp *dungeon*)))
-    tile))
+  (make-instance 'tile :x x :y y :walkablep walkablep :region-id region-id))
 
 (defun on-tile-map (filter func effect)
   (with-slots (width height tile-map) *dungeon*
