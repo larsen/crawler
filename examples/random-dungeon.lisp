@@ -1,6 +1,6 @@
 (in-package :crawler-examples)
 
-(defparameter *draw-modes* '(region walkable region))
+(defparameter *draw-modes* '(walkable region))
 
 (defsketch random-dungeon (:title "Dungeon"
                            :width (* (tile-size *dungeon*) (width *dungeon*))

@@ -58,7 +58,8 @@
   (create-corridors)
   (create-connectors)
   (combine-dungeon)
-  (remove-dead-ends))
+  (remove-dead-ends)
+  (format t "Random seed: ~a~%" (seed *dungeon*)))
 
 (defun init-generator (seed)
   (when seed

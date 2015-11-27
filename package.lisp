@@ -12,6 +12,10 @@
            #:tile-size
            #:walkablep
            #:region-id
+           #:windiness
+           #:door-rate
+           #:room-density
+           #:seed
            #:attrs))
 
 (in-package :crawler)
