@@ -38,7 +38,7 @@
 
 (defun make-dungeon (&key w h
                        (tile-size 10)
-                       (room-density 0.1)
+                       (room-density 0.75)
                        (windiness 0)
                        (door-rate 0.2)
                        (seed nil))
