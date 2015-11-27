@@ -4,7 +4,8 @@
   :version "0.1"
   :license "MIT"
   :description "A dungeon exploration game."
-  :depends-on (#:alexandria)
+  :depends-on (#:alexandria
+               #:cl-variates)
   :serial t
   :components ((:file "package")
                (:file "dungeon")

@@ -30,20 +30,20 @@
       (floor (* possible-rooms density)))))
 
 (defmethod generate-room-size ()
-  (flet ((random-size (min max)
-           (when (evenp min) (incf min))
-           (+ min (* 2 (random (floor (+ 2 (- max min)) 2))))))
-    (with-slots (room-min-max) *dungeon*
+  (with-slots (generator room-min-max) *dungeon*
+    (flet ((random-size (min max)
+             (when (evenp min) (incf min))
+             (+ min (* 2 (rand (floor (+ 2 (- max min)) 2) generator)))))
       (let* ((w (apply #'random-size room-min-max))
              (h (apply #'random-size room-min-max)))
-        (if (< (/ (min w h) (max w h)) (random 1.0))
+        (if (< (/ (min w h) (max w h)) (uniform-random generator 0 1))
             (generate-room-size)
             (values w h))))))
 
 (defmethod generate-room-location (w h)
-  (with-slots (width height) *dungeon*
-    (let ((x (random (- width w)))
-          (y (random (- height h))))
+  (with-slots (generator width height) *dungeon*
+    (let ((x (integer-random generator 0 (- width w 1)))
+          (y (integer-random generator 0 (- height h 1))))
       (values (if (evenp x) (incf x) x)
               (if (evenp y) (incf y) y)))))
 

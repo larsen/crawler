@@ -30,13 +30,18 @@
    (connectors :accessor connectors
                :initform (make-hash-table))
    (tile-map :accessor tile-map
-             :initarg :tile-map)))
+             :initarg :tile-map)
+   (generator :accessor generator
+              :initform nil)
+   (seed :accessor seed
+         :initform (get-universal-time))))
 
 (defun make-dungeon (&key w h
                        (tile-size 10)
                        (room-density 0.75)
                        (windiness 0)
-                       (door-rate 0.2))
+                       (door-rate 0.2)
+                       (seed nil))
   (let ((w (if (evenp w) (1+ w) w))
         (h (if (evenp h) (1+ h) h)))
     (setf *dungeon* (make-instance 'dungeon
@@ -47,12 +52,18 @@
                                    :room-density room-density
                                    :windiness windiness
                                    :door-rate door-rate)))
+  (init-generator seed)
   (create-walls)
   (create-rooms)
   (create-corridors)
   (create-connectors)
   (combine-dungeon)
   (remove-dead-ends))
+
+(defun init-generator (seed)
+  (when seed
+    (setf (seed *dungeon*) seed))
+  (setf (generator *dungeon*) (make-random-number-generator (seed *dungeon*))))
 
 (defun create-walls ()
   (with-slots (width height tile-map) *dungeon*
@@ -76,12 +87,11 @@
   (on-tile-map #'possible-connector-p #'region-id #'add-connector))
 
 (defun combine-dungeon ()
-  (with-slots (regions) *dungeon*
-    (loop with region-count = (length (hash-table-keys regions))
-          with region = (gethash (1+ (random region-count)) regions)
-          while (connectors region)
-          for door = (random-connector (id region))
-          do (merge-region (id region) door))))
+  (with-slots (generator regions) *dungeon*
+    (loop with region-id = (random-element generator (hash-table-keys regions))
+          while (connectors (gethash region-id regions))
+          for door = (random-connector region-id)
+          do (merge-region region-id door))))
 
 (defun remove-dead-ends ()
   (with-slots (dead-ends-p) *dungeon*

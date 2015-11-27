@@ -58,6 +58,6 @@
     (case (sdl2:scancode keysym)
       (:scancode-escape (close-window window)))))
 
-(defun random-dungeon (width height tile-size)
-  (make-dungeon :w width :h height :tile-size tile-size)
+(defun random-dungeon (width height tile-size &key seed)
+  (make-dungeon :w width :h height :tile-size tile-size :seed seed)
   (make-instance 'random-dungeon))
