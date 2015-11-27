@@ -61,7 +61,8 @@
   (remove-dead-ends))
 
 (defun make-seed ()
-  (parse-integer (format nil "~d~d" (get-universal-time) (get-internal-real-time))))
+  (let ((seed (parse-integer (format nil "~d~d" (get-universal-time) (get-internal-real-time)))))
+    (mod seed (expt 2 48))))
 
 (defun init-generator (seed)
   (when seed
