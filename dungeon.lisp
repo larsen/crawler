@@ -34,7 +34,7 @@
    (generator :accessor generator
               :initform nil)
    (seed :accessor seed
-         :initform (get-universal-time))))
+         :initform (make-seed))))
 
 (defun make-dungeon (&key w h
                        (tile-size 10)
@@ -58,13 +58,16 @@
   (create-corridors)
   (create-connectors)
   (combine-dungeon)
-  (remove-dead-ends)
-  (format t "Random seed: ~a~%" (seed *dungeon*)))
+  (remove-dead-ends))
+
+(defun make-seed ()
+  (parse-integer (format nil "~d~d" (get-universal-time) (get-internal-real-time))))
 
 (defun init-generator (seed)
   (when seed
     (setf (seed *dungeon*) seed))
-  (setf (generator *dungeon*) (make-random-number-generator (seed *dungeon*))))
+  (setf (generator *dungeon*) (make-random-number-generator (seed *dungeon*)))
+  (format t "Random seed: ~a~%" (seed *dungeon*)))
 
 (defun create-walls ()
   (with-slots (width height tile-map) *dungeon*
