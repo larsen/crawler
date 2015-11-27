@@ -1,6 +1,6 @@
 (in-package :crawler-examples)
 
-(defparameter *draw-modes* '(walkable region))
+(defparameter *draw-modes* '(region walkable region))
 
 (defsketch random-dungeon (:title "Dungeon"
                            :width (* (tile-size *dungeon*) (width *dungeon*))
@@ -45,11 +45,11 @@
     (select-pen x y (call-next-method))))
 
 (defmethod mousebutton-event ((window random-dungeon) state ts button x y)
-  (with-slots (width height tile-size) *dungeon*
+  (with-slots (width height tile-size windiness) *dungeon*
     (when (eq state :MOUSEBUTTONUP)
       (setf (slot-value window 'updatedp) nil)
       (when (eql button 1)
-        (make-dungeon :w width :h height :tile-size tile-size))
+        (make-dungeon :w width :h height :tile-size tile-size :windiness windiness))
       (when (eql button 3)
         (setf *draw-modes* (rotate *draw-modes*))))))
 
@@ -58,6 +58,6 @@
     (case (sdl2:scancode keysym)
       (:scancode-escape (close-window window)))))
 
-(defun random-dungeon (width height tile-size &key seed)
-  (make-dungeon :w width :h height :tile-size tile-size :seed seed)
+(defun random-dungeon (width height tile-size &key (windiness 0) seed)
+  (make-dungeon :w width :h height :tile-size tile-size :windiness windiness :seed seed)
   (make-instance 'random-dungeon))
