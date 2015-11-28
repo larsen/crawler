@@ -34,24 +34,20 @@
 
 (defmethod draw-tile ((attr (eql 'region)) x y)
   (macrolet ((select-pen (x y &body body)
-               `(let* ((region (region-id (aref (tile-map *dungeon*) ,x ,y)))
-                       (color (if region
-                                  (hsb-360 (* 10 (mod region 36))
-                                           (* 50 (1+ (mod region 2)))
-                                           (* 50 (1+ (mod region 2))))
-                                  (gray 0.2))))
-                  (with-pen (make-pen :fill color)
+               `(let ((region (region-id (aref (tile-map *dungeon*) ,x ,y))))
+                  (with-pen (make-pen :fill (if region (hash-color region) (gray 0.2)))
                     ,@body))))
     (select-pen x y (call-next-method))))
 
 (defmethod mousebutton-event ((window random-dungeon) state ts button x y)
-  (with-slots (width height tile-size room-density door-rate windiness) *dungeon*
+  (with-slots (width height tile-size room-size room-density door-rate windiness) *dungeon*
     (when (eq state :MOUSEBUTTONUP)
       (setf (slot-value window 'updatedp) nil)
       (when (eql button 1)
         (make-dungeon :w width
                       :h height
                       :tile-size tile-size
+                      :room-size room-size
                       :room-density room-density
                       :door-rate door-rate
                       :windiness windiness))
@@ -63,10 +59,17 @@
     (case (sdl2:scancode keysym)
       (:scancode-escape (close-window window)))))
 
-(defun random-dungeon (width height tile-size &key (room-density 0.75) (door-rate 0.2) (windiness 0) seed)
+(defun random-dungeon (width height &key
+                                      (tile-size 10)
+                                      (room-size '(3 11))
+                                      (room-density 0.75)
+                                      (door-rate 0.1)
+                                      (windiness 0)
+                                      seed)
   (make-dungeon :w width
                 :h height
                 :tile-size tile-size
+                :room-size room-size
                 :room-density room-density
                 :door-rate door-rate
                 :windiness windiness

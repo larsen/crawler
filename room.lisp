@@ -13,8 +13,7 @@
           :initarg :w)
    (height :reader height
            :initarg :h)
-   (region-id :accessor region-id
-              :initform nil)))
+   (region-id :accessor region-id)))
 
 (defmethod initialize-instance :after ((o dungeon-room) &key)
   (with-slots (x1 x2 y1 y2 width height) o
@@ -22,34 +21,33 @@
           y2 (+ y1 height))))
 
 (defun calculate-room-count (density)
-  (with-slots (width height room-min-max) *dungeon*
-    (let* ((smallest-area (* (expt (first room-min-max) 2)))
-           (largest-area (* (expt (second room-min-max) 2)))
+  (with-slots (width height room-size) *dungeon*
+    (let* ((smallest-area (* (expt (first room-size) 2)))
+           (largest-area (* (expt (second room-size) 2)))
            (average-area (/ (abs (- largest-area smallest-area)) 2))
            (possible-rooms (/ (* width height) average-area)))
       (floor (* possible-rooms density)))))
 
-(defmethod generate-room-size ()
-  (with-slots (generator room-min-max) *dungeon*
-    (flet ((random-size (min max)
-             (when (evenp min) (incf min))
-             (+ min (* 2 (rand (floor (+ 2 (- max min)) 2) generator)))))
-      (let* ((w (apply #'random-size room-min-max))
-             (h (apply #'random-size room-min-max)))
-        (if (< (/ (min w h) (max w h)) (uniform-random generator 0 1))
-            (generate-room-size)
-            (values w h))))))
+(defun generate-room-size ()
+  (destructuring-bind (min max) (room-size *dungeon*)
+    (let* ((w (rng 'odd-range :min min :max max))
+           (h (rng 'odd-range :min min :max max)))
+      (if (< (/ (min w h) (max w h)) (rng 'range-i))
+          (generate-room-size)
+          (values w h)))))
 
-(defmethod generate-room-location (w h)
-  (with-slots (generator width height) *dungeon*
-    (let ((x (integer-random generator 0 (- width w 1)))
-          (y (integer-random generator 0 (- height h 1))))
+(defun generate-room-location (w h)
+  (with-slots (width height) *dungeon*
+    (let ((x (rng 'int :max (- width w 1)))
+          (y (rng 'int :max (- height h 1))))
       (values (if (evenp x) (incf x) x)
               (if (evenp y) (incf y) y)))))
 
-(defmethod add-to-dungeon ((room dungeon-room))
+(defun add-to-dungeon (room)
   (with-slots (x1 x2 y1 y2 region-id) room
-    (with-slots (tile-map rooms regions) *dungeon*
+    (with-slots (tile-map rooms regions current-region) *dungeon*
+      (setf region-id (incf current-region)
+            (gethash region-id regions) (make-instance 'region :id region-id))
       (loop for x from x1 below x2
             do (loop for y from y1 below y2
                      for tile = (make-tile x y :walkablep t :region-id region-id)
@@ -57,21 +55,19 @@
                         (push tile (tiles (gethash region-id regions)))))
       (push room rooms))))
 
-(defmethod create-room ()
+(defun create-room ()
   (multiple-value-bind (w h) (generate-room-size)
     (multiple-value-bind (x y) (generate-room-location w h)
       (let ((room (make-instance 'dungeon-room :x1 x :y1 y :w w :h h)))
         (with-slots (current-region regions) *dungeon*
           (with-slots (region-id) room
             (unless (intersectsp room)
-              (setf region-id (incf current-region)
-                    (gethash region-id regions) (make-instance 'region :id region-id))
               (add-to-dungeon room))))))))
 
-(defmethod intersectsp ((new-room dungeon-room))
+(defun intersectsp (new-room)
   (loop for room in (rooms *dungeon*)
         do (when (and (<= (x1 new-room) (x2 room))
                       (>= (x2 new-room) (x1 room))
                       (<= (y1 new-room) (y2 room))
                       (>= (y2 new-room) (y1 room)))
-             (return t))))
+             (return room))))

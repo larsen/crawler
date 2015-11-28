@@ -13,8 +13,8 @@
           :initform nil)
    (regions :accessor regions
             :initform (make-hash-table))
-   (room-min-max :reader room-min-max
-                 :initform '(3 11))
+   (room-size :reader room-size
+              :initarg :room-size)
    (current-region :accessor current-region
                    :initform 0)
    (dead-ends-p :accessor dead-ends-p
@@ -30,18 +30,15 @@
    (connectors :accessor connectors
                :initform (make-hash-table))
    (tile-map :accessor tile-map
-             :initarg :tile-map)
-   (generator :accessor generator
-              :initform nil)
-   (seed :accessor seed
-         :initform (make-seed))))
+             :initarg :tile-map)))
 
 (defun make-dungeon (&key w h
                        (tile-size 10)
+                       (room-size '(3 11))
                        (room-density 0.75)
+                       (door-rate 0.1)
                        (windiness 0)
-                       (door-rate 0.2)
-                       (seed nil))
+                       seed)
   (let ((w (if (evenp w) (1+ w) w))
         (h (if (evenp h) (1+ h) h)))
     (setf *dungeon* (make-instance 'dungeon
@@ -49,6 +46,7 @@
                                    :h h
                                    :tile-size tile-size
                                    :tile-map (make-array `(,w ,h))
+                                   :room-size room-size
                                    :room-density room-density
                                    :windiness windiness
                                    :door-rate door-rate)))
@@ -59,16 +57,6 @@
   (create-connectors)
   (combine-dungeon)
   (remove-dead-ends))
-
-(defun make-seed ()
-  (let ((seed (parse-integer (format nil "~d~d" (get-universal-time) (get-internal-real-time)))))
-    (mod seed (expt 2 48))))
-
-(defun init-generator (seed)
-  (when seed
-    (setf (seed *dungeon*) seed))
-  (setf (generator *dungeon*) (make-random-number-generator (seed *dungeon*)))
-  (format t "Random seed: ~a~%" (seed *dungeon*)))
 
 (defun create-walls ()
   (with-slots (width height tile-map) *dungeon*
@@ -85,15 +73,15 @@
           do (create-room)
              (incf tries))))
 
-(defmethod create-corridors ()
-  (on-tile-map #'carvablep #'walkablep #'carve))
+(defun create-corridors ()
+  (on-tile-map #'carvablep #'walkablep #'carve :start '(1 1) :end '(-1 -1)))
 
 (defun create-connectors ()
-  (on-tile-map #'possible-connector-p #'region-id #'add-connector))
+  (on-tile-map #'possible-connector-p #'region-id #'add-connector :start '(1 1) :end '(-1 -1)))
 
 (defun combine-dungeon ()
-  (with-slots (generator regions) *dungeon*
-    (loop with region-id = (random-element generator (hash-table-keys regions))
+  (with-slots (regions) *dungeon*
+    (loop with region-id = (rng 'elt :list (hash-table-keys regions))
           while (connectors (gethash region-id regions))
           for door = (random-connector region-id)
           do (merge-region region-id door))))
@@ -102,8 +90,4 @@
   (with-slots (dead-ends-p) *dungeon*
     (loop while dead-ends-p
           do (setf dead-ends-p nil)
-             (on-tile-map #'dead-end-p #'walkablep #'make-wall))))
-
-(defun test ()
-  (with-slots (width height tile-map) *dungeon*
-    (make-array (* width height) :displaced-to tile-map)))
+             (on-tile-map #'dead-end-p #'walkablep #'make-wall :start '(1 1) :end '(-1 -1)))))

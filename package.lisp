@@ -14,6 +14,7 @@
            #:region-id
            #:windiness
            #:door-rate
+           #:room-size
            #:room-density
            #:seed
            #:attrs))

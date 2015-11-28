@@ -9,9 +9,9 @@
       (if tilep (apply #'aref tile-map cell) cell))))
 
 (defun pick-cell (cells)
-  (with-slots (generator windiness) *dungeon*
-    (if (> (uniform-random generator 0 1) windiness)
-        (random-element generator cells)
+  (with-slots (windiness) *dungeon*
+    (if (> (rng 'range-i) windiness)
+        (rng 'elt :list cells)
         (first (last cells)))))
 
 (defun neighbors (x y)
@@ -26,12 +26,12 @@
      '((-1 0) (1 0) (0 -1) (0 1)))))
 
 (defun carve-tile (cells)
-  (with-slots (generator tile-map regions current-region) *dungeon*
+  (with-slots (tile-map regions current-region) *dungeon*
     (let* ((cell (pick-cell cells))
            (neighbors (neighbors (first cell) (second cell))))
       (deletef cells cell :test #'equal)
       (when neighbors
-        (loop with dir = (random-element generator neighbors)
+        (loop with dir = (rng 'elt :list neighbors)
               with new-cell = (list cell (get-cell cell dir 1))
               for i below 2
               for tile = (get-cell cell dir i t)

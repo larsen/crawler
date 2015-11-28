@@ -10,7 +10,7 @@
                 #:rect
                 #:with-pen
                 #:make-pen
-                #:hsb-360
+                #:hash-color
                 #:gray
                 #:rgb
                 #:background

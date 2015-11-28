@@ -8,6 +8,7 @@
                #:cl-variates)
   :serial t
   :components ((:file "package")
+               (:file "generator")
                (:file "dungeon")
                (:file "tile")
                (:file "room")

@@ -6,8 +6,7 @@
    (y :reader y
       :initarg :y)
    (walkablep :accessor walkablep
-              :initarg :walkablep
-              :initform nil)
+              :initarg :walkablep)
    (region-id :accessor region-id
               :initarg :region-id)
    (attrs :accessor attrs
@@ -20,12 +19,16 @@
 (defun make-tile (x y &key walkablep region-id)
   (make-instance 'tile :x x :y y :walkablep walkablep :region-id region-id))
 
-(defun on-tile-map (filter func effect)
+(defun on-tile-map (filter func effect &key (start '(0 0)) (end '(0 0)))
   (with-slots (width height tile-map) *dungeon*
     (flet ((neighbor-data (x y)
-             (funcall func (aref tile-map x y))))
-      (loop for x from 1 below (1- width)
-            do (loop for y from 1 below (1- height)
+             (when (and (>= x 0)
+                        (>= y 0)
+                        (<= x (+ (1- width) (first end)))
+                        (<= y (+ (1- height) (second end))))
+               (funcall func (aref tile-map x y)))))
+      (loop for x from (first start) below (+ width (first end))
+            do (loop for y from (second start) below (+ height (second end))
                      for tile = (aref tile-map x y)
                      for neighbor-data = (make-neighbor-data
                                           :n (neighbor-data x (1- y))
