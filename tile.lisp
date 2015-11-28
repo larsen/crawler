@@ -50,9 +50,10 @@
 
 (defun add-connector (tile neighbors)
   (with-slots (n s e w nw ne se sw) neighbors
-    (setf (gethash tile (connectors *dungeon*)) (sort (remove nil (list n s e w)) #'<))
-    (dolist (region-id (gethash tile (connectors *dungeon*)))
-      (push tile (connectors (get-region region-id))))))
+    (with-slots (connectors) *dungeon*
+      (setf (gethash tile connectors) (sort (remove nil (list n s e w)) #'<))
+      (dolist (region-id (gethash tile connectors))
+        (push tile (connectors (get-region region-id)))))))
 
 (defun dead-end-p (tile neighbors)
   (with-slots (n s e w nw ne se sw) neighbors

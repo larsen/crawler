@@ -13,31 +13,23 @@
           :initform nil)
    (regions :accessor regions
             :initform (make-hash-table))
-   (room-size :reader room-size
-              :initarg :room-size)
    (current-region :accessor current-region
                    :initform 0)
    (dead-ends-p :accessor dead-ends-p
                 :initform t)
-   (room-density :reader room-density
-                 :initarg :room-density)
    (doors :accessor doors
           :initform nil)
-   (door-rate :reader door-rate
-              :initarg :door-rate)
-   (windiness :reader windiness
-              :initarg :windiness)
    (connectors :accessor connectors
                :initform (make-hash-table))
    (tile-map :accessor tile-map
              :initarg :tile-map)))
 
-(defun make-dungeon (&key w h
-                       (tile-size 10)
-                       (room-size '(3 11))
-                       (room-density 0.75)
-                       (door-rate 0.1)
-                       (windiness 0)
+(defun make-dungeon (&key w h (tile-size 10)
+                       room-size-min
+                       room-size-max
+                       room-density
+                       door-rate
+                       windiness
                        seed)
   (let ((w (if (evenp w) (1+ w) w))
         (h (if (evenp h) (1+ h) h)))
@@ -45,12 +37,13 @@
                                    :w w
                                    :h h
                                    :tile-size tile-size
-                                   :tile-map (make-array `(,w ,h))
-                                   :room-size room-size
-                                   :room-density room-density
-                                   :windiness windiness
-                                   :door-rate door-rate)))
-  (init-generator seed)
+                                   :tile-map (make-array `(,w ,h)))))
+  (make-generator :seed seed
+                  :room-size-min room-size-min
+                  :room-size-max room-size-max
+                  :room-density room-density
+                  :door-rate door-rate
+                  :windiness windiness)
   (create-walls)
   (create-rooms)
   (create-corridors)
@@ -65,13 +58,12 @@
                    do (setf (aref tile-map x y) (make-tile x y))))))
 
 (defun create-rooms ()
-  (with-slots (room-density rooms) *dungeon*
-    (loop with max-rooms = (calculate-room-count room-density)
-          with tries = 0
-          until (or (= (length rooms) max-rooms)
-                    (>= tries 1000))
-          do (create-room)
-             (incf tries))))
+  (loop with max-rooms = (calculate-room-count (room-density *generator*))
+        with tries = 0
+        until (or (= (length (rooms *dungeon*)) max-rooms)
+                  (>= tries 1000))
+        do (create-room)
+           (incf tries)))
 
 (defun create-corridors ()
   (on-tile-map #'carvablep #'walkablep #'carve :start '(1 1) :end '(-1 -1)))

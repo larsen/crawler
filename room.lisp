@@ -21,27 +21,26 @@
           y2 (+ y1 height))))
 
 (defun calculate-room-count (density)
-  (with-slots (width height room-size) *dungeon*
-    (let* ((smallest-area (* (expt (first room-size) 2)))
-           (largest-area (* (expt (second room-size) 2)))
+  (with-slots (width height) *dungeon*
+    (let* ((smallest-area (* (expt (room-size-min *generator*) 2)))
+           (largest-area (* (expt (room-size-max *generator*) 2)))
            (average-area (/ (abs (- largest-area smallest-area)) 2))
            (possible-rooms (/ (* width height) average-area)))
       (floor (* possible-rooms density)))))
 
 (defun generate-room-size ()
-  (destructuring-bind (min max) (room-size *dungeon*)
-    (let* ((w (rng 'odd-range :min min :max max))
-           (h (rng 'odd-range :min min :max max)))
+  (with-slots (room-size-min room-size-max) *generator*
+    (let ((w (rng 'odd-range :min room-size-min :max room-size-max))
+          (h (rng 'odd-range :min room-size-min :max room-size-max)))
       (if (< (/ (min w h) (max w h)) (rng 'range-i))
           (generate-room-size)
           (values w h)))))
 
-(defun generate-room-location (w h)
-  (with-slots (width height) *dungeon*
-    (let ((x (rng 'int :max (- width w 1)))
-          (y (rng 'int :max (- height h 1))))
-      (values (if (evenp x) (incf x) x)
-              (if (evenp y) (incf y) y)))))
+(defun generate-room-location (width height)
+  (let ((x (rng 'int :max (- (width *dungeon*) width 1)))
+        (y (rng 'int :max (- (height *dungeon*) height 1))))
+    (values (if (evenp x) (incf x) x)
+            (if (evenp y) (incf y) y))))
 
 (defun add-to-dungeon (room)
   (with-slots (x1 x2 y1 y2 region-id) room

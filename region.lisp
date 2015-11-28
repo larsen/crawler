@@ -45,15 +45,14 @@
           (member (aref tile-map (1+ x) y) doors)))))
 
 (defun merge-region (region-id door)
-  (with-slots (door-rate doors) *dungeon*
-    (let* ((connected (get-connected-region region-id door))
-           (extra-door (random-connector region-id)))
-      (unless (adjacent-door-p door)
-        (setf (region-id door) 0
-              (walkablep door) t)
-        (push door doors)
-        (if (< (rng 'range-i) door-rate)
-            (merge-region region-id extra-door)
-            (progn
-              (remove-extra-connectors region-id connected)
-              (move-connectors connected region-id)))))))
+  (let* ((connected (get-connected-region region-id door))
+         (extra-door (random-connector region-id)))
+    (unless (adjacent-door-p door)
+      (setf (region-id door) 0
+            (walkablep door) t)
+      (push door (doors *dungeon*))
+      (if (< (rng 'range-i) (door-rate *generator*))
+          (merge-region region-id extra-door)
+          (progn
+            (remove-extra-connectors region-id connected)
+            (move-connectors connected region-id))))))

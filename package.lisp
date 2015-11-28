@@ -12,9 +12,11 @@
            #:tile-size
            #:walkablep
            #:region-id
+           #:*generator*
            #:windiness
            #:door-rate
-           #:room-size
+           #:room-size-min
+           #:room-size-max
            #:room-density
            #:seed
            #:attrs))

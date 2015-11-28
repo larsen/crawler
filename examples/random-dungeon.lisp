@@ -40,19 +40,21 @@
     (select-pen x y (call-next-method))))
 
 (defmethod mousebutton-event ((window random-dungeon) state ts button x y)
-  (with-slots (width height tile-size room-size room-density door-rate windiness) *dungeon*
-    (when (eq state :MOUSEBUTTONUP)
-      (setf (slot-value window 'updatedp) nil)
-      (when (eql button 1)
-        (make-dungeon :w width
-                      :h height
-                      :tile-size tile-size
-                      :room-size room-size
-                      :room-density room-density
-                      :door-rate door-rate
-                      :windiness windiness))
-      (when (eql button 3)
-        (setf *draw-modes* (rotate *draw-modes*))))))
+  (with-slots (width height tile-size) *dungeon*
+    (with-slots (room-size-min room-size-max room-density door-rate windiness) *generator*
+      (when (eq state :MOUSEBUTTONUP)
+        (setf (slot-value window 'updatedp) nil)
+        (when (eql button 1)
+          (make-dungeon :w width
+                        :h height
+                        :tile-size tile-size
+                        :room-size-min room-size-min
+                        :room-size-max room-size-max
+                        :room-density room-density
+                        :door-rate door-rate
+                        :windiness windiness))
+        (when (eql button 3)
+          (setf *draw-modes* (rotate *draw-modes*)))))))
 
 (defmethod keyboard-event ((window random-dungeon) state ts repeat-p keysym)
   (when (eq state :KEYDOWN)
@@ -61,15 +63,17 @@
 
 (defun random-dungeon (width height &key
                                       (tile-size 10)
-                                      (room-size '(3 11))
-                                      (room-density 0.75)
-                                      (door-rate 0.1)
-                                      (windiness 0)
+                                      room-size-min
+                                      room-size-max
+                                      room-density
+                                      door-rate
+                                      windiness
                                       seed)
   (make-dungeon :w width
                 :h height
                 :tile-size tile-size
-                :room-size room-size
+                :room-size-min room-size-min
+                :room-size-max room-size-max
                 :room-density room-density
                 :door-rate door-rate
                 :windiness windiness
