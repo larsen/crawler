@@ -58,10 +58,8 @@
   (multiple-value-bind (w h) (generate-room-size)
     (multiple-value-bind (x y) (generate-room-location w h)
       (let ((room (make-instance 'dungeon-room :x1 x :y1 y :w w :h h)))
-        (with-slots (current-region regions) *dungeon*
-          (with-slots (region-id) room
-            (unless (intersectsp room)
-              (add-to-dungeon room))))))))
+        (unless (intersectsp room)
+          (add-to-dungeon room))))))
 
 (defun intersectsp (new-room)
   (loop for room in (rooms *dungeon*)
