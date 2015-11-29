@@ -8,7 +8,7 @@
               :initform 0)
    (room-density :accessor room-density
                  :initarg :room-density
-                 :initform 0.55)
+                 :initform 0.65)
    (room-size-min :accessor room-size-min
                   :initarg room-size-min
                   :initform 3)
@@ -17,42 +17,64 @@
                   :initform 11)
    (door-rate :accessor door-rate
               :initarg :door-rate
-              :initform 0.1)))
+              :initform 0.05)))
 
 (defun make-seed ()
-  (mod
-   (parse-integer
-    (format nil "~d~d"
-            (get-universal-time)
-            (get-internal-real-time)))
-   (expt 2 24)))
+  (parse-integer
+   (format nil "~d~2,'0d~2,'0d~2,'0d~2,'0d~2,'0d"
+           (mod
+            (parse-integer
+             (format nil "~d~d" (get-universal-time) (get-internal-real-time)))
+            (expt 2 36))
+           (truncate (windiness *generator*) 0.01)
+           (truncate (door-rate *generator*) 0.01)
+           (truncate (room-density *generator*) 0.01)
+           (room-size-max *generator*)
+           (room-size-min *generator*))))
+
+(defun set-attr (unpacked name value)
+  (setf (slot-value *generator* name)
+        (or value
+            (getf unpacked (make-keyword name))
+            (slot-value *generator* name))))
 
 (defun make-generator (&key seed room-size-min room-size-max room-density door-rate windiness)
-  (setf *generator* (make-instance 'generator)
-        (random-seed *generator*) (or seed (make-seed))
-        (room-size-min *generator*) (or room-size-min (room-size-min *generator*))
-        (room-size-max *generator*) (or room-size-max (room-size-max *generator*))
-        (room-density *generator*) (or room-density (room-density *generator*))
-        (door-rate *generator*) (or door-rate (door-rate *generator*))
-        (windiness *generator*) (or windiness (windiness *generator*)))
-  (format t "Random seed: ~a~%" (random-seed *generator*))
-  *generator*)
+  (setf *generator* (make-instance 'generator))
+  (let* ((packed (make-seed))
+         (unpacked (unpack-seed (if seed seed packed))))
+    (set-attr unpacked 'room-size-min room-size-min)
+    (set-attr unpacked 'room-size-max room-size-max)
+    (set-attr unpacked 'room-density room-density)
+    (set-attr unpacked 'door-rate door-rate)
+    (set-attr unpacked 'windiness windiness)
+    (setf (random-seed *generator*) (getf unpacked :seed))
+    (format t "Random seed: ~a~%" (if seed seed packed))
+    *generator*))
 
 (defun unpack-seed (seed)
-  (loop with args
-        with packed = '(:windiness :room-density :door-rate)
-        while packed
-        do (appendf args (append `(,(car packed) ,(float (/ (mod seed 100) 100)))))
-           (setf seed (truncate (/ seed 100)))
-           (pop packed)
-        finally (return (append args `(:seed ,seed)))))
+  (flet ((apply-arg (packed)
+           `(,(cadar packed)
+             ,(case (caar packed)
+                (:float (float (/ (mod seed 100) 100)))
+                (:int (mod seed 100))))))
+    (loop with args
+          with packed = '((:int :room-size-min)
+                          (:int :room-size-max)
+                          (:float :room-density)
+                          (:float :door-rate)
+                          (:float :windiness))
+          while packed
+          do (appendf args (apply-arg packed))
+             (setf seed (truncate (/ seed 100)))
+             (pop packed)
+          finally (return (append `(:seed ,seed) args)))))
 
 (defgeneric rng (type &key))
 
 (defmethod rng ((type (eql 'elt)) &key list)
   (random-element *generator* list))
 
-(defmethod rng ((type (eql 'range-i)) &key (min 0) (max 1))
+(defmethod rng ((type (eql 'range-i)) &key (min 0.0) (max 1.0))
   (random-range-inclusive *generator* min max))
 
 (defmethod rng ((type (eql 'odd-range)) &key (min 1) (max 3))
