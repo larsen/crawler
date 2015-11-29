@@ -43,26 +43,26 @@
                        do (funcall effect tile neighbor-data))))))
 
 (defun possible-connector-p (tile neighbors)
-  (with-slots (n s e w nw ne se sw) neighbors
+  (with-slots (n s e w) neighbors
     (and (not (region-id tile))
          (or (and (not (eql n s)) n s)
              (and (not (eql e w)) e w)))))
 
 (defun add-connector (tile neighbors)
-  (with-slots (n s e w nw ne se sw) neighbors
+  (with-slots (n s e w) neighbors
     (with-slots (connectors) *dungeon*
       (setf (gethash tile connectors) (sort (remove nil (list n s e w)) #'<))
       (dolist (region-id (gethash tile connectors))
         (push tile (connectors (get-region region-id)))))))
 
 (defun dead-end-p (tile neighbors)
-  (with-slots (n s e w nw ne se sw) neighbors
+  (with-slots (n s e w) neighbors
     (let ((dirs (remove-if #'identity (list n s e w))))
       (and (walkablep tile)
            (>= (length dirs) 3)))))
 
 (defun make-wall (tile neighbors)
-  (with-slots (n s e w nw ne se sw) neighbors
-    (setf (dead-ends-p *dungeon*) t
-          (walkablep tile) nil
-          (region-id tile) nil)))
+  (declare (ignore neighbors))
+  (setf (dead-ends-p *dungeon*) t
+        (walkablep tile) nil
+        (region-id tile) nil))

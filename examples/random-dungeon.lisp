@@ -8,7 +8,7 @@
                            :debug :scancode-grave)
     ((updatedp nil))
   (when (not updatedp)
-    (with-slots (width height tile-size) *dungeon*
+    (with-slots (width height) *dungeon*
       (dotimes (x width)
         (dotimes (y height)
           (draw-tile (first *draw-modes*) x y))))

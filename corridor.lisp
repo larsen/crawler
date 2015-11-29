@@ -39,7 +39,7 @@
 
 (defun carve (tile neighbors)
   (declare (ignore neighbors))
-  (with-slots (width height regions current-region) *dungeon*
+  (with-slots (regions current-region) *dungeon*
     (with-slots (x y walkablep region-id) tile
       (setf walkablep t
             region-id (incf current-region)
@@ -51,4 +51,4 @@
 
 (defun carvablep (tile neighbors)
   (with-slots (n s e w nw ne se sw) neighbors
-    (every #'null (list (walkablep tile) n ne e se s sw w nw))))
+    (every #'null (list (walkablep tile) n s e w nw ne se sw))))
