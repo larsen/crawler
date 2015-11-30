@@ -22,19 +22,18 @@
 
 (defun calculate-room-count (density)
   (with-slots (width height) *dungeon*
-    (let* ((smallest-area (* (expt (room-size-min *generator*) 2)))
-           (largest-area (* (expt (room-size-max *generator*) 2)))
+    (let* ((smallest-area (* (expt (attr 'room-size-min) 2)))
+           (largest-area (* (expt (attr 'room-size-max) 2)))
            (average-area (/ (abs (- largest-area smallest-area)) 2))
            (possible-rooms (/ (* width height) average-area)))
       (floor (* possible-rooms density)))))
 
 (defun generate-room-size ()
-  (with-slots (room-size-min room-size-max) *generator*
-    (let ((w (rng 'odd-range :min room-size-min :max room-size-max))
-          (h (rng 'odd-range :min room-size-min :max room-size-max)))
-      (if (< (/ (min w h) (max w h)) (rng 'range-i))
-          (generate-room-size)
-          (values w h)))))
+  (let ((w (rng 'odd-range :min (attr 'room-size-min) :max (attr 'room-size-max)))
+        (h (rng 'odd-range :min (attr 'room-size-min) :max (attr 'room-size-max))))
+    (if (< (/ (min w h) (max w h)) (rng 'range-i))
+        (generate-room-size)
+        (values w h))))
 
 (defun generate-room-location (width height)
   (let ((x (rng 'int :max (- (width *dungeon*) width 1)))
@@ -46,7 +45,7 @@
   (with-slots (x1 x2 y1 y2 region-id) room
     (with-slots (tile-map rooms regions current-region) *dungeon*
       (setf region-id (incf current-region)
-            (gethash region-id regions) (make-instance 'region :id region-id))
+            (gethash region-id regions) (make-instance 'region :id region-id :roomp t))
       (loop for x from x1 below x2
             do (loop for y from y1 below y2
                      for tile = (make-tile x y :walkablep t :region-id region-id)

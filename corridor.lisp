@@ -8,7 +8,7 @@
     (if tilep (apply #'aref (tile-map *dungeon*) cell) cell)))
 
 (defun pick-cell (cells)
-  (if (> (rng 'range-i) (windiness *generator*))
+  (if (> (rng 'range-i) (attr 'windiness))
       (rng 'elt :list cells)
       (first (last cells))))
 

@@ -58,7 +58,7 @@
                    do (setf (aref tile-map x y) (make-tile x y))))))
 
 (defun create-rooms ()
-  (loop with max-rooms = (calculate-room-count (room-density *generator*))
+  (loop with max-rooms = (calculate-room-count (attr 'room-density))
         with tries = 0
         until (or (= (length (rooms *dungeon*)) max-rooms)
                   (>= tries 1000))
@@ -73,7 +73,7 @@
 
 (defun combine-dungeon ()
   (with-slots (regions) *dungeon*
-    (loop with region-id = (rng 'elt :list (hash-table-keys regions))
+    (loop with region-id = 1
           while (connectors (gethash region-id regions))
           for door = (random-connector region-id)
           do (merge-region region-id door))))

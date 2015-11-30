@@ -6,6 +6,9 @@
        :initform nil)
    (connectors :accessor connectors
                :initform nil)
+   (roomp :reader roomp
+          :initarg :roomp
+          :initform nil)
    (tiles :accessor tiles
           :initform nil)))
 
@@ -51,7 +54,7 @@
       (setf (region-id door) 0
             (walkablep door) t)
       (push door (doors *dungeon*))
-      (if (< (rng 'range-i) (door-rate *generator*))
+      (if (< (rng 'range-i) (attr 'door-rate))
           (merge-region region-id extra-door)
           (progn
             (remove-extra-connectors region-id connected)

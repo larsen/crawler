@@ -41,20 +41,19 @@
 
 (defmethod mousebutton-event ((window random-dungeon) state ts button x y)
   (with-slots (width height tile-size) *dungeon*
-    (with-slots (room-size-min room-size-max room-density door-rate windiness) *generator*
-      (when (eq state :MOUSEBUTTONUP)
-        (setf (slot-value window 'updatedp) nil)
-        (when (eql button 1)
-          (make-dungeon :w width
-                        :h height
-                        :tile-size tile-size
-                        :room-size-min room-size-min
-                        :room-size-max room-size-max
-                        :room-density room-density
-                        :door-rate door-rate
-                        :windiness windiness))
-        (when (eql button 3)
-          (setf *draw-modes* (rotate *draw-modes*)))))))
+    (when (eq state :MOUSEBUTTONUP)
+      (setf (slot-value window 'updatedp) nil)
+      (when (eql button 1)
+        (make-dungeon :w width
+                      :h height
+                      :tile-size tile-size
+                      :room-size-min (attr 'room-size-min)
+                      :room-size-max (attr 'room-size-max)
+                      :room-density (attr 'room-density)
+                      :door-rate (attr 'door-rate)
+                      :windiness (attr 'windiness)))
+      (when (eql button 3)
+        (setf *draw-modes* (rotate *draw-modes*))))))
 
 (defmethod keyboard-event ((window random-dungeon) state ts repeat-p keysym)
   (when (eq state :KEYDOWN)

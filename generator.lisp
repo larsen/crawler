@@ -3,21 +3,24 @@
 (defvar *generator* nil)
 
 (defclass generator (random-number-generation-mixin)
-  ((windiness :accessor windiness
-              :initarg :windiness
-              :initform 0)
-   (room-density :accessor room-density
-                 :initarg :room-density
-                 :initform 0.65)
-   (room-size-min :accessor room-size-min
-                  :initarg room-size-min
-                  :initform 3)
-   (room-size-max :accessor room-size-max
-                  :initarg :room-size-max
-                  :initform 11)
-   (door-rate :accessor door-rate
-              :initarg :door-rate
-              :initform 0.05)))
+  ((attrs :accessor attrs
+          :initform '((windiness . 0)
+                      (room-density . 0.65)
+                      (room-size-min . 3)
+                      (room-size-max . 11)
+                      (door-rate . 0.1)))))
+
+(defun attr (name)
+  (cdr (assoc name (attrs *generator*))))
+
+(defun (setf attr) (value name unpacked)
+  (with-slots (attrs) *generator*
+    (if-let ((cell (assoc name attrs))
+             (value (or value (getf unpacked (make-keyword name)))))
+      (setf (cdr cell) value)
+      (progn
+        (push (cons name value) attrs)
+        value))))
 
 (defun make-seed ()
   (parse-integer
@@ -26,48 +29,46 @@
             (parse-integer
              (format nil "~d~d" (get-universal-time) (get-internal-real-time)))
             (expt 2 36))
-           (truncate (windiness *generator*) 0.01)
-           (truncate (door-rate *generator*) 0.01)
-           (truncate (room-density *generator*) 0.01)
-           (room-size-max *generator*)
-           (room-size-min *generator*))))
-
-(defun set-attr (unpacked name value)
-  (setf (slot-value *generator* name)
-        (or value
-            (getf unpacked (make-keyword name))
-            (slot-value *generator* name))))
+           (truncate (attr 'door-rate) 0.01)
+           (attr 'room-size-max)
+           (attr 'room-size-min)
+           (truncate (attr 'room-density) 0.01)
+           (truncate (attr 'windiness) 0.01))))
 
 (defun set-random-seed (&optional seed)
   (let ((packed (or seed (make-seed))))
     (setf (random-seed *generator*) (getf (unpack-seed packed) :seed))
     (format t "Random seed: ~a~%" packed)))
 
+(defun seed-valid-p (seed)
+  (let ((unpacked (unpack-seed seed)))
+    (when (and seed (> (getf unpacked :seed) 1))
+      seed)))
+
+(defmacro set-attrs (unpacked attrs)
+  `(setf
+    ,@(loop for attr in attrs append
+            `((attr ',attr ,unpacked) ,attr))))
+
 (defun make-generator (&key seed room-size-min room-size-max room-density door-rate windiness)
   (setf *generator* (make-instance 'generator))
   (let* ((packed (make-seed))
+         (seed (seed-valid-p seed))
          (unpacked (unpack-seed (or seed packed))))
-    (set-attr unpacked 'room-size-min room-size-min)
-    (set-attr unpacked 'room-size-max room-size-max)
-    (set-attr unpacked 'room-density room-density)
-    (set-attr unpacked 'door-rate door-rate)
-    (set-attr unpacked 'windiness windiness)
+    (set-attrs unpacked (room-size-min room-size-max room-density door-rate windiness))
     (set-random-seed seed)
     *generator*))
 
 (defun unpack-seed (seed)
   (flet ((apply-arg (packed)
-           `(,(cadar packed)
-             ,(case (caar packed)
-                (:float (float (/ (mod seed 100) 100)))
-                (:int (mod seed 100))))))
+           `(,(make-keyword (caar packed))
+             ,(typecase (cdar packed)
+                (float (float (/ (mod seed 100) 100)))
+                (integer (mod seed 100))
+                (t seed)))))
     (loop with args
-          with packed = '((:int :room-size-min)
-                          (:int :room-size-max)
-                          (:float :room-density)
-                          (:float :door-rate)
-                          (:float :windiness))
-          while packed
+          with packed = (attrs *generator*)
+          while (and seed packed)
           do (appendf args (apply-arg packed))
              (setf seed (truncate (/ seed 100)))
              (pop packed)

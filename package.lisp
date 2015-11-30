@@ -13,12 +13,8 @@
            #:walkablep
            #:region-id
            #:*generator*
-           #:windiness
-           #:door-rate
-           #:room-size-min
-           #:room-size-max
-           #:room-density
            #:seed
+           #:attr
            #:attrs))
 
 (in-package :crawler)
