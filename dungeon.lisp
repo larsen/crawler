@@ -24,26 +24,15 @@
    (tile-map :accessor tile-map
              :initarg :tile-map)))
 
-(defun make-dungeon (&key w h (tile-size 10)
-                       room-size-min
-                       room-size-max
-                       room-density
-                       door-rate
-                       windiness
-                       seed)
-  (let ((w (if (evenp w) (1+ w) w))
-        (h (if (evenp h) (1+ h) h)))
+(defun make-dungeon (w h tile-size &rest attrs)
+  (let ((w (if (evenp w) (1- w) w))
+        (h (if (evenp h) (1- h) h)))
     (setf *dungeon* (make-instance 'dungeon
                                    :w w
                                    :h h
                                    :tile-size tile-size
                                    :tile-map (make-array `(,w ,h)))))
-  (make-generator :seed seed
-                  :room-size-min room-size-min
-                  :room-size-max room-size-max
-                  :room-density room-density
-                  :door-rate door-rate
-                  :windiness windiness)
+  (make-generator attrs)
   (create-walls)
   (create-rooms)
   (create-corridors)

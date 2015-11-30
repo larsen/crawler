@@ -44,14 +44,7 @@
     (when (eq state :MOUSEBUTTONUP)
       (setf (slot-value window 'updatedp) nil)
       (when (eql button 1)
-        (make-dungeon :w width
-                      :h height
-                      :tile-size tile-size
-                      :room-size-min (attr 'room-size-min)
-                      :room-size-max (attr 'room-size-max)
-                      :room-density (attr 'room-density)
-                      :door-rate (attr 'door-rate)
-                      :windiness (attr 'windiness)))
+        (apply #'make-dungeon width height tile-size (get-attrs)))
       (when (eql button 3)
         (setf *draw-modes* (rotate *draw-modes*))))))
 
@@ -60,21 +53,6 @@
     (case (sdl2:scancode keysym)
       (:scancode-escape (close-window window)))))
 
-(defun random-dungeon (width height &key
-                                      (tile-size 10)
-                                      room-size-min
-                                      room-size-max
-                                      room-density
-                                      door-rate
-                                      windiness
-                                      seed)
-  (make-dungeon :w width
-                :h height
-                :tile-size tile-size
-                :room-size-min room-size-min
-                :room-size-max room-size-max
-                :room-density room-density
-                :door-rate door-rate
-                :windiness windiness
-                :seed seed)
+(defun random-dungeon (w h tile-size &rest attrs)
+  (apply #'make-dungeon w h tile-size attrs)
   (make-instance 'random-dungeon))

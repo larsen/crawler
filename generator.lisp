@@ -3,76 +3,60 @@
 (defvar *generator* nil)
 
 (defclass generator (random-number-generation-mixin)
-  ((attrs :accessor attrs
-          :initform '((windiness . 0)
-                      (room-density . 0.65)
-                      (room-size-min . 3)
-                      (room-size-max . 11)
-                      (door-rate . 0.1)))))
+  ((windiness :accessor windiness
+              :initform 0)
+   (room-density :accessor room-density
+                 :initform 0.65)
+   (room-size-min :accessor room-size-min
+                  :initform 3)
+   (room-size-max :accessor room-size-max
+                  :initform 11)
+   (door-rate :accessor door-rate
+              :initform 0.1)))
 
 (defun attr (name)
-  (cdr (assoc name (attrs *generator*))))
+  (funcall name *generator*))
 
-(defun (setf attr) (value name unpacked)
-  (with-slots (attrs) *generator*
-    (if-let ((cell (assoc name attrs))
-             (value (or value (getf unpacked (make-keyword name)))))
-      (setf (cdr cell) value)
-      (progn
-        (push (cons name value) attrs)
-        value))))
+(defun (setf attr) (value name)
+  (when (slot-exists-p *generator* name)
+    (setf (slot-value *generator* name)
+          (or value (slot-value *generator* name)))))
+
+(defun get-attrs ()
+  (list :windiness (attr 'windiness)
+        :room-density (attr 'room-density)
+        :room-size-min (attr 'room-size-min)
+        :room-size-max (attr 'room-size-max)
+        :door-rate (attr 'door-rate)))
+
+(defun set-attrs (attrs)
+  (loop for (attr . value) in (plist-alist attrs)
+        for name = (intern (symbol-name attr) :crawler)
+        do (setf (attr name) value)))
 
 (defun make-seed ()
-  (parse-integer
-   (format nil "~d~2,'0d~2,'0d~2,'0d~2,'0d~2,'0d"
-           (mod
-            (parse-integer
-             (format nil "~d~d" (get-universal-time) (get-internal-real-time)))
-            (expt 2 36))
-           (truncate (attr 'door-rate) 0.01)
-           (attr 'room-size-max)
-           (attr 'room-size-min)
-           (truncate (attr 'room-density) 0.01)
-           (truncate (attr 'windiness) 0.01))))
-
-(defun set-random-seed (&optional seed)
-  (let ((packed (or seed (make-seed))))
-    (setf (random-seed *generator*) (getf (unpack-seed packed) :seed))
-    (format t "Random seed: ~a~%" packed)))
+  (mod
+   (parse-integer
+    (shuffle
+     (format nil "~d~d"
+             (get-universal-time)
+             (get-internal-real-time))))
+   (expt 2 48)))
 
 (defun seed-valid-p (seed)
-  (let ((unpacked (unpack-seed seed)))
-    (when (and seed (> (getf unpacked :seed) 1))
-      seed)))
+  (when (and seed (> seed 0))
+    seed))
 
-(defmacro set-attrs (unpacked attrs)
-  `(setf
-    ,@(loop for attr in attrs append
-            `((attr ',attr ,unpacked) ,attr))))
+(defun set-seed (seed)
+  (let ((seed (or (seed-valid-p seed) (make-seed))))
+    (setf (random-seed *generator*) seed)
+    (format t "Random seed: ~a~%" seed)))
 
-(defun make-generator (&key seed room-size-min room-size-max room-density door-rate windiness)
+(defun make-generator (attrs)
   (setf *generator* (make-instance 'generator))
-  (let* ((packed (make-seed))
-         (seed (seed-valid-p seed))
-         (unpacked (unpack-seed (or seed packed))))
-    (set-attrs unpacked (room-size-min room-size-max room-density door-rate windiness))
-    (set-random-seed seed)
-    *generator*))
-
-(defun unpack-seed (seed)
-  (flet ((apply-arg (packed)
-           `(,(make-keyword (caar packed))
-             ,(typecase (cdar packed)
-                (float (float (/ (mod seed 100) 100)))
-                (integer (mod seed 100))
-                (t seed)))))
-    (loop with args
-          with packed = (attrs *generator*)
-          while (and seed packed)
-          do (appendf args (apply-arg packed))
-             (setf seed (truncate (/ seed 100)))
-             (pop packed)
-          finally (return (append `(:seed ,seed) args)))))
+  (set-attrs attrs)
+  (set-seed (getf attrs :seed))
+  *generator*)
 
 (defgeneric rng (type &key))
 
