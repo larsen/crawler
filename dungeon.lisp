@@ -31,7 +31,7 @@
                                    :w w
                                    :h h
                                    :tile-size tile-size
-                                   :tile-map (make-array `(,w ,h)))))
+                                   :tile-map (make-array (* w h)))))
   (make-generator attrs)
   (create-walls)
   (create-rooms)
@@ -44,7 +44,7 @@
   (with-slots (width height tile-map) *dungeon*
     (loop for x below width
           do (loop for y below height
-                   do (setf (aref tile-map x y) (make-tile x y))))))
+                   do (setf (tile x y) (make-tile x y))))))
 
 (defun create-rooms ()
   (loop with max-rooms = (calculate-room-count (attr 'room-density))

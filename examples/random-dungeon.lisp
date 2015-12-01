@@ -26,7 +26,7 @@
 
 (defmethod draw-tile ((attr (eql 'walkable)) x y)
   (macrolet ((select-pen (x y &body body)
-               `(with-pen (if (walkablep (aref (tile-map *dungeon*) ,x ,y))
+               `(with-pen (if (walkablep (tile ,x ,y))
                               (make-pen :fill (rgb 0.1 0.5 1))
                               (make-pen :fill (gray 0.2)))
                   ,@body)))
@@ -34,7 +34,7 @@
 
 (defmethod draw-tile ((attr (eql 'region)) x y)
   (macrolet ((select-pen (x y &body body)
-               `(let ((region (region-id (aref (tile-map *dungeon*) ,x ,y))))
+               `(let ((region (region-id (tile ,x ,y))))
                   (with-pen (make-pen :fill (if region (hash-color region) (gray 0.2)))
                     ,@body))))
     (select-pen x y (call-next-method))))

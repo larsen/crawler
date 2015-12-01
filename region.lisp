@@ -42,10 +42,10 @@
 (defun adjacent-door-p (tile)
   (with-slots (tile-map doors) *dungeon*
     (with-slots (x y) tile
-      (or (member (aref tile-map x (1- y)) doors)
-          (member (aref tile-map x (1+ y)) doors)
-          (member (aref tile-map (1- x) y) doors)
-          (member (aref tile-map (1+ x) y) doors)))))
+      (or (member (tile x (1- y)) doors)
+          (member (tile x (1+ y)) doors)
+          (member (tile (1- x) y) doors)
+          (member (tile (1+ x) y) doors)))))
 
 (defun merge-region (region-id door)
   (let* ((connected (get-connected-region region-id door))

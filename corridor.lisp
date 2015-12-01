@@ -5,7 +5,7 @@
                       (* (second dir) (1+ scalar))))
          (cell (list (+ (first cell) (first scale))
                      (+ (second cell) (second scale)))))
-    (if tilep (apply #'aref (tile-map *dungeon*) cell) cell)))
+    (if tilep (apply #'tile cell) cell)))
 
 (defun pick-cell (cells)
   (if (> (rng 'range-i) (attr 'windiness))

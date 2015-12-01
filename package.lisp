@@ -8,6 +8,7 @@
            #:*dungeon*
            #:width
            #:height
+           #:tile
            #:tile-map
            #:tile-size
            #:walkablep

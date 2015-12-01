@@ -49,7 +49,7 @@
       (loop for x from x1 below x2
             do (loop for y from y1 below y2
                      for tile = (make-tile x y :walkablep t :region-id region-id)
-                     do (setf (aref tile-map x y) tile)
+                     do (setf (tile x y) tile)
                         (push tile (tiles (gethash region-id regions)))))
       (push room rooms))))
 
