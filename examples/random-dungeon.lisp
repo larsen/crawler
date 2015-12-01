@@ -54,5 +54,5 @@
       (:scancode-escape (close-window window)))))
 
 (defun random-dungeon (w h tile-size &rest attrs)
-  (apply #'make-dungeon w h tile-size attrs)
-  (make-instance 'random-dungeon))
+  (when (apply #'make-dungeon w h tile-size attrs)
+    (make-instance 'random-dungeon)))

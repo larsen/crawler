@@ -15,14 +15,17 @@
               :initform 0.1)))
 
 (defun attr (name)
+  "Get a generator attribute value given its name."
   (funcall name *generator*))
 
 (defun (setf attr) (value name)
+  "Set the value of a generator attribute of the specified name."
   (when (slot-exists-p *generator* name)
     (setf (slot-value *generator* name)
           (or value (slot-value *generator* name)))))
 
 (defun get-attrs ()
+  "Get a list of all generator attributes and their values."
   (list :windiness (attr 'windiness)
         :room-density (attr 'room-density)
         :room-size-min (attr 'room-size-min)
@@ -30,11 +33,13 @@
         :door-rate (attr 'door-rate)))
 
 (defun set-attrs (attrs)
+  "Set the specified generator attributes."
   (loop for (attr . value) in (plist-alist attrs)
         for name = (intern (symbol-name attr) :crawler)
         do (setf (attr name) value)))
 
 (defun make-seed ()
+  "Create a random seed for the generator."
   (mod
    (parse-integer
     (shuffle
@@ -44,21 +49,26 @@
    (expt 2 48)))
 
 (defun seed-valid-p (seed)
-  (when (and seed (> seed 0))
+  "Check if a random seed is valid."
+  (when (and (integerp seed)
+             (> seed 0))
     seed))
 
 (defun set-seed (seed)
+  "Set the random seed to be used by the generator."
   (let ((seed (or (seed-valid-p seed) (make-seed))))
     (setf (random-seed *generator*) seed)
     (format t "Random seed: ~a~%" seed)))
 
 (defun make-generator (attrs)
+  "Create a new generator."
   (setf *generator* (make-instance 'generator))
   (set-attrs attrs)
   (set-seed (getf attrs :seed))
   *generator*)
 
-(defgeneric rng (type &key))
+(defgeneric rng (type &key)
+  (:documentation "Convenience function for generating random numbers."))
 
 (defmethod rng ((type (eql 'elt)) &key list)
   (random-element *generator* list))

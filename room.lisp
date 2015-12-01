@@ -21,6 +21,8 @@
           y2 (+ y1 height))))
 
 (defun calculate-room-count (density)
+  "Calculate an estimated number of rooms to generate for the specified density, based on the
+minimum and maximum room sizes"
   (with-slots (width height) *dungeon*
     (let* ((smallest-area (* (expt (attr 'room-size-min) 2)))
            (largest-area (* (expt (attr 'room-size-max) 2)))
@@ -29,6 +31,7 @@
       (floor (* possible-rooms density)))))
 
 (defun generate-room-size ()
+  "Generate a random room size within the minimum and maximum sizes."
   (let ((w (rng 'odd-range :min (attr 'room-size-min) :max (attr 'room-size-max)))
         (h (rng 'odd-range :min (attr 'room-size-min) :max (attr 'room-size-max))))
     (if (< (/ (min w h) (max w h)) (rng 'range-i))
@@ -36,12 +39,14 @@
         (values w h))))
 
 (defun generate-room-location (width height)
+  "Generate a random location in the dungeon for a room."
   (let ((x (rng 'int :max (- (width *dungeon*) width 1)))
         (y (rng 'int :max (- (height *dungeon*) height 1))))
     (values (if (evenp x) (incf x) x)
             (if (evenp y) (incf y) y))))
 
 (defun add-to-dungeon (room)
+  "Add the given room to the dungeon."
   (with-slots (x1 x2 y1 y2 region-id) room
     (with-slots (tile-map rooms regions current-region) *dungeon*
       (setf region-id (incf current-region)
@@ -54,6 +59,7 @@
       (push room rooms))))
 
 (defun create-room ()
+  "Create a room with a random size and location, placing it in the dungeon."
   (multiple-value-bind (w h) (generate-room-size)
     (multiple-value-bind (x y) (generate-room-location w h)
       (let ((room (make-instance 'dungeon-room :x1 x :y1 y :w w :h h)))
@@ -61,6 +67,7 @@
           (add-to-dungeon room))))))
 
 (defun intersectsp (new-room)
+  "Check whether a room overlaps another room."
   (loop for room in (rooms *dungeon*)
         do (when (and (<= (x1 new-room) (x2 room))
                       (>= (x2 new-room) (x1 room))

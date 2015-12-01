@@ -1,6 +1,7 @@
 (in-package :crawler)
 
 (defun get-cell (cell dir &optional (scalar 1) tilep)
+  "Get a cell to carve."
   (let* ((scale (list (* (first dir) (1+ scalar))
                       (* (second dir) (1+ scalar))))
          (cell (list (+ (first cell) (first scale))
@@ -8,11 +9,13 @@
     (if tilep (apply #'tile cell) cell)))
 
 (defun pick-cell (cells)
+  "Select a cell to be checked whether or not it should be carved."
   (if (> (rng 'range-i) (attr 'windiness))
       (rng 'elt :list cells)
       (first (last cells))))
 
 (defun neighbors (x y)
+  "Get all offset coordinates representing a neighbor of the specified coordinates."
   (with-slots (width height) *dungeon*
     (remove-if
      (lambda (dir)
@@ -24,6 +27,7 @@
      '((-1 0) (1 0) (0 -1) (0 1)))))
 
 (defun carve-tile (cells)
+  "Pick a cell and try carving it."
   (let* ((cell (pick-cell cells))
          (neighbors (neighbors (first cell) (second cell))))
     (deletef cells cell :test #'equal)
@@ -38,6 +42,7 @@
   cells)
 
 (defun carve (tile neighbors)
+  "Carve all tiles into a corridor starting at the specified tile."
   (declare (ignore neighbors))
   (with-slots (regions current-region) *dungeon*
     (with-slots (x y walkablep region-id) tile
@@ -50,5 +55,6 @@
             do (setf cells (carve-tile cells))))))
 
 (defun carvablep (tile neighbors)
+  "Check if a tile and all of its neighbors are unwalkable."
   (with-slots (n s e w nw ne se sw) neighbors
     (every #'null (list (walkablep tile) n s e w nw ne se sw))))
