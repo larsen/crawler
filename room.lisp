@@ -45,7 +45,7 @@
   (with-slots (x1 x2 y1 y2 region-id) room
     (with-slots (tile-map rooms regions current-region) *dungeon*
       (setf region-id (incf current-region)
-            (gethash region-id regions) (make-instance 'region :id region-id :roomp t))
+            (gethash region-id regions) (make-instance 'region :id region-id))
       (loop for x from x1 below x2
             do (loop for y from y1 below y2
                      for tile = (make-tile x y :walkablep t :region-id region-id)

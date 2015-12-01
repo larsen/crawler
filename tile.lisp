@@ -35,7 +35,8 @@
                         (<= x (+ (1- width) (first end)))
                         (<= y (+ (1- height) (second end))))
                (funcall func (tile x y)))))
-      (loop for x from (first start) below (+ width (first end))
+      (loop with map-affected-p
+            for x from (first start) below (+ width (first end))
             do (loop for y from (second start) below (+ height (second end))
                      for tile = (tile x y)
                      for neighbor-data = (make-neighbor-data
@@ -48,7 +49,12 @@
                                           :se (neighbor-data (1+ x) (1+ y))
                                           :sw (neighbor-data (1- x) (1+ y)))
                      when (funcall filter tile neighbor-data)
-                       do (funcall effect tile neighbor-data))))))
+                       do (let ((value (funcall effect tile neighbor-data)))
+                            (setf map-affected-p (or map-affected-p value))))
+            finally (return map-affected-p)))))
+
+(defmacro converge (&body body)
+  `(loop while ,@body))
 
 (defun possible-connector-p (tile neighbors)
   (with-slots (n s e w) neighbors
@@ -71,6 +77,6 @@
 
 (defun make-wall (tile neighbors)
   (declare (ignore neighbors))
-  (setf (dead-ends-p *dungeon*) t
-        (walkablep tile) nil
-        (region-id tile) nil))
+  (setf (walkablep tile) nil
+        (region-id tile) nil)
+  tile)

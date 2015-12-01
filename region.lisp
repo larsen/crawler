@@ -6,9 +6,6 @@
        :initform nil)
    (connectors :accessor connectors
                :initform nil)
-   (roomp :reader roomp
-          :initarg :roomp
-          :initform nil)
    (tiles :accessor tiles
           :initform nil)))
 
@@ -24,20 +21,23 @@
 (defun remove-extra-connectors (region-id connected-id)
   (let ((region (get-region region-id))
         (connected (get-region connected-id)))
-    (dolist (tile (connectors region))
-      (let ((connector (gethash tile (connectors *dungeon*))))
-        (when (and (member region-id connector)
-                   (member connected-id connector))
-          (deletef (connectors region) tile)
-          (deletef (connectors connected) tile))))))
+    (with-slots (connectors) *dungeon*
+      (dolist (tile (connectors region))
+        (let ((connector (gethash tile connectors)))
+          (when (and (member region-id connector)
+                     (member connected-id connector))
+            (deletef (connectors region) tile)
+            (deletef (connectors connected) tile)
+            (remhash tile connectors)))))))
 
 (defun move-connectors (from to)
   (let ((from-region (get-region from))
         (to-region (get-region to)))
-    (dolist (tile (connectors from-region))
-      (setf (gethash tile (connectors *dungeon*))
-            (substitute to from (gethash tile (connectors *dungeon*))))
-      (push tile (connectors to-region)))))
+    (with-slots (connectors) *dungeon*
+      (dolist (tile (connectors from-region))
+        (setf (gethash tile connectors)
+              (substitute to from (gethash tile connectors)))
+        (push tile (connectors to-region))))))
 
 (defun adjacent-door-p (tile)
   (with-slots (tile-map doors) *dungeon*

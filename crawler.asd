@@ -9,8 +9,8 @@
   :serial t
   :components ((:file "package")
                (:file "generator")
-               (:file "dungeon")
                (:file "tile")
+               (:file "dungeon")
                (:file "room")
                (:file "corridor")
                (:file "region")))

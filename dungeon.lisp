@@ -15,8 +15,6 @@
             :initform (make-hash-table))
    (current-region :accessor current-region
                    :initform 0)
-   (dead-ends-p :accessor dead-ends-p
-                :initform t)
    (doors :accessor doors
           :initform nil)
    (connectors :accessor connectors
@@ -62,13 +60,10 @@
 
 (defun combine-dungeon ()
   (with-slots (regions) *dungeon*
-    (loop with region-id = 1
+    (loop with region-id = (rng 'elt :list (hash-table-keys regions))
           while (connectors (gethash region-id regions))
           for door = (random-connector region-id)
           do (merge-region region-id door))))
 
 (defun remove-dead-ends ()
-  (with-slots (dead-ends-p) *dungeon*
-    (loop while dead-ends-p
-          do (setf dead-ends-p nil)
-             (on-tile-map #'dead-end-p #'walkablep #'make-wall :start '(1 1) :end '(-1 -1)))))
+  (converge (on-tile-map #'dead-end-p #'walkablep #'make-wall :start '(1 1) :end '(-1 -1))))
