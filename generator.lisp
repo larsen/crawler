@@ -11,8 +11,8 @@
                   :initform 3)
    (room-size-max :accessor room-size-max
                   :initform 11)
-   (door-rate :accessor door-rate
-              :initform 0.1)))
+   (junction-rate :accessor junction-rate
+                  :initform 0.1)))
 
 (defun attr (name)
   "Get a generator attribute value given its name."
@@ -30,7 +30,7 @@
         :room-density (attr 'room-density)
         :room-size-min (attr 'room-size-min)
         :room-size-max (attr 'room-size-max)
-        :door-rate (attr 'door-rate)))
+        :junction-rate (attr 'junction-rate)))
 
 (defun set-attrs (attrs)
   "Set the specified generator attributes."
@@ -57,8 +57,7 @@
 (defun set-seed (seed)
   "Set the random seed to be used by the generator."
   (let ((seed (or (seed-valid-p seed) (make-seed))))
-    (setf (random-seed *generator*) seed)
-    (format t "Random seed: ~a~%" seed)))
+    (setf (random-seed *generator*) seed)))
 
 (defun make-generator (attrs)
   "Create a new generator."

@@ -19,7 +19,7 @@
 
 (defun get-connected-region (region-id tile)
   "Get the secondary region a connector tile connects."
-  (first (remove region-id (gethash tile (connectors *dungeon*)))))
+  (first (remove region-id (adjacent-regions tile))))
 
 (defun remove-extra-connectors (region-id connected-id)
   "Remove extra connector tiles no longer needed."
@@ -27,12 +27,11 @@
         (connected (get-region connected-id)))
     (with-slots (connectors) *dungeon*
       (dolist (tile (connectors region))
-        (let ((connector (gethash tile connectors)))
+        (let ((connector (adjacent-regions tile)))
           (when (and (member region-id connector)
                      (member connected-id connector))
             (deletef (connectors region) tile)
-            (deletef (connectors connected) tile)
-            (remhash tile connectors)))))))
+            (deletef (connectors connected) tile)))))))
 
 (defun move-connectors (from to)
   "Move connectors of a region to the new region after it has been merged."
@@ -40,29 +39,13 @@
         (to-region (get-region to)))
     (with-slots (connectors) *dungeon*
       (dolist (tile (connectors from-region))
-        (setf (gethash tile connectors)
-              (substitute to from (gethash tile connectors)))
+        (setf (adjacent-regions tile)
+              (substitute to from (adjacent-regions tile)))
         (push tile (connectors to-region))))))
 
-(defun adjacent-door-p (tile)
-  "Check if a tile has a door adjacent to it."
-  (with-slots (tile-map doors) *dungeon*
-    (with-slots (x y) tile
-      (or (member (tile x (1- y)) doors)
-          (member (tile x (1+ y)) doors)
-          (member (tile (1- x) y) doors)
-          (member (tile (1+ x) y) doors)))))
-
-(defun merge-region (region-id door)
-  "Merge a region with another by carving the specified door."
-  (let ((connected (get-connected-region region-id door))
-        (extra-door (random-connector region-id)))
-    (unless (adjacent-door-p door)
-      (setf (region-id door) 0
-            (walkablep door) t)
-      (push door (doors *dungeon*))
-      (if (< (rng 'range-i) (attr 'door-rate))
-          (merge-region region-id extra-door)
-          (progn
-            (remove-extra-connectors region-id connected)
-            (move-connectors connected region-id))))))
+(defun merge-region (region-id connector)
+  "Merge a region with another by carving the specified connector into a junction."
+  (let ((connected (get-connected-region region-id connector)))
+    (make-junction connector)
+    (remove-extra-connectors region-id connected)
+    (move-connectors connected region-id)))

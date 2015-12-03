@@ -9,6 +9,10 @@
               :initarg :walkablep)
    (region-id :accessor region-id
               :initarg :region-id)
+   (adjacent-regions :accessor adjacent-regions
+                     :initform nil)
+   (junctionp :accessor junctionp
+              :initform nil)
    (attrs :accessor attrs
           :initform nil)))
 
@@ -54,8 +58,8 @@ area."
      :se (get-tile-data (tile (1+ x) (1+ y)) func start end)
      :sw (get-tile-data (tile (1- x) (1+ y)) func start end))))
 
-(defun on-tile-map (filter func effect &key (start '(0 0)) (end '(0 0)))
-  "Loop over all tiles within a specified area, calling an effect for all tiles that pass through
+(defun map-tiles (filter func effect &key (start '(0 0)) (end '(0 0)))
+  "Loop over all tiles within a specified area, calling an effect for each tile that passes through
 a filter."
   (with-slots (width height) *dungeon*
     (loop with map-affected-p
@@ -67,6 +71,11 @@ a filter."
                      do (let ((value (funcall effect tile neighbors)))
                           (setf map-affected-p (or map-affected-p value))))
           finally (return map-affected-p))))
+
+(defun carvablep (tile neighbors)
+  "Check if a tile and all of its neighbors are unwalkable."
+  (with-slots (n s e w nw ne se sw) neighbors
+    (every #'null (list (walkablep tile) n s e w nw ne se sw))))
 
 (defun connectorp (tile neighbors)
   "Check if a tile can connect two different regions."
@@ -86,8 +95,8 @@ a filter."
   "Mark a tile as a connector between two regions."
   (with-slots (n s e w) neighbors
     (with-slots (connectors) *dungeon*
-      (setf (gethash tile connectors) (sort (remove nil (list n s e w)) #'<))
-      (dolist (region-id (gethash tile connectors))
+      (setf (adjacent-regions tile) (remove nil (list n s e w)))
+      (dolist (region-id (adjacent-regions tile))
         (push tile (connectors (get-region region-id)))))))
 
 (defun make-wall (tile neighbors)
@@ -96,3 +105,24 @@ a filter."
   (setf (walkablep tile) nil
         (region-id tile) nil)
   tile)
+
+(defun adjacent-junction-p (tile)
+  "Check if a tile has a junction adjacent to it."
+  (with-slots (x y) tile
+    (or (junctionp (tile x (1- y)))
+        (junctionp (tile x (1+ y)))
+        (junctionp (tile (1- x) y))
+        (junctionp (tile (1+ x) y)))))
+
+(defun make-junction (tile)
+  "Mark a tile as a junction between two regions if it has no adjacent junctions."
+  (unless (adjacent-junction-p tile)
+    (setf (region-id tile) 0
+          (walkablep tile) t
+          (junctionp tile) t)))
+
+(defun make-extra-junction (tile neighbors)
+  "Check if a tile should become an extra junction, and mark it as such if so."
+  (declare (ignore neighbors))
+  (when (< (rng 'range-i) (attr 'junction-rate))
+    (make-junction tile)))

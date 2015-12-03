@@ -53,8 +53,3 @@
       (loop with cells = `((,x ,y))
             while cells
             do (setf cells (carve-tile cells))))))
-
-(defun carvablep (tile neighbors)
-  "Check if a tile and all of its neighbors are unwalkable."
-  (with-slots (n s e w nw ne se sw) neighbors
-    (every #'null (list (walkablep tile) n s e w nw ne se sw))))

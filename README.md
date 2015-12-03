@@ -12,7 +12,7 @@ If you want to try out the example graphical dungeon generator, load the example
 
 ```lisp
 (ql:quickload :crawler-examples)
-(crawler-examples:random-dungeon :w 99 :h 49 :tile-size 10)
+(crawler-examples:random-dungeon 99 49 10)
 ```
 
 This will create a dungeon that is 99x49 tiles, with a tile size of 10x10, just as the example images below. The example uses [Sketch](http://github.com/vydd/sketch) to display the dungeon graphically. Note that this requires having SDL2 installed on your operating system.
@@ -22,30 +22,15 @@ This will create a dungeon that is 99x49 tiles, with a tile size of 10x10, just 
 Within the example window the following input is accepted:
 
 * Left mouse-click: Generate and display a new dungeon of the same size.
-* Right mouse-click: Toggle between terrain and region modes.
-
-Terrain Mode displays each 'terrain' in a different color. There are three types of terrain:
-
-* Gray: Walls
-* Blue: Corridors
-* Red: Doors
-
-Region Mode displays each unconnected area in a different color. This means each room is a different color, and possibly different parts of the winding corridors. Also, possible locations for a door are marked with a red circle. These are walls that are connecting 2 different regions.
 
 ## Examples
 
-### Terrain Mode Example
-
-![Terrain Example](/images/example-terrain.png)
-
-### Region Mode Example
-
-![Region Example](/images/example-regions.png)
+![Example Dungeon](/images/example.png)
 
 ## TODO
 
 * ~~Make corridors be less windy.~~
-* ~~Enforce extra doors to not be adjacent to existing doors.~~
+* ~~Enforce junctions adjacent to each other.~~
 * Many more fixes.
 
 If you have another suggestion, just let me know, and I'll see if it makes sense to implement.

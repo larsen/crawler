@@ -10,13 +10,8 @@
                 #:rect
                 #:with-pen
                 #:make-pen
-                #:hash-color
                 #:gray
-                #:rgb
-                #:background
-                #:ellipse)
-  (:import-from #:alexandria
-                #:rotate)
+                #:background)
   (:export #:random-dungeon))
 
 (in-package :crawler-examples)
