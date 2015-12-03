@@ -30,7 +30,7 @@
                                    :h h
                                    :tile-size tile-size
                                    :tile-map (make-array (* w h))))
-    #++(format t "Random seed: ~a~%" (random-seed *generator*))
+    (format t "Random seed: ~a~%" (random-seed *generator*))
     (generate attrs)))
 
 (defun generate (attrs)
