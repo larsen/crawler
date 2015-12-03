@@ -34,29 +34,19 @@
   (with-slots (width tile-map) *dungeon*
     (setf (aref tile-map (+ x (* y width))) tile)))
 
-(defun get-tile-data (tile func start end)
-  "Get data for a tile that is within a specified area."
-  (with-slots (width height) *dungeon*
-    (with-slots (x y) tile
-      (when (and (>= x (first start))
-                 (>= y (second start))
-                 (<= x (+ (1- width) (first end)))
-                 (<= y (+ (1- height) (second end))))
-        (funcall func tile)))))
-
-(defun get-neighbors (tile func start end)
+(defun get-neighbors (tile func)
   "Create a structure containing data for all of a tile's neighbors that are within a specified
 area."
   (with-slots (x y) tile
     (make-neighbor-data
-     :n (get-tile-data (tile x (1- y)) func start end)
-     :s (get-tile-data (tile x (1+ y)) func start end)
-     :e (get-tile-data (tile (1+ x) y) func start end)
-     :w (get-tile-data (tile (1- x) y) func start end)
-     :nw (get-tile-data (tile (1- x) (1- y)) func start end)
-     :ne (get-tile-data (tile (1+ x) (1- y)) func start end)
-     :se (get-tile-data (tile (1+ x) (1+ y)) func start end)
-     :sw (get-tile-data (tile (1- x) (1+ y)) func start end))))
+     :n (funcall func (tile x (1- y)))
+     :s (funcall func (tile x (1+ y)))
+     :e (funcall func (tile (1+ x) y))
+     :w (funcall func (tile (1- x) y))
+     :nw (funcall func (tile (1- x) (1- y)))
+     :ne (funcall func (tile (1+ x) (1- y)))
+     :se (funcall func (tile (1+ x) (1+ y)))
+     :sw (funcall func (tile (1- x) (1+ y))))))
 
 (defun map-tiles (filter func effect &key (start '(1 1)) (end '(-1 -1)))
   "Loop over all tiles within a specified area, calling an effect for each tile that passes through
@@ -66,7 +56,7 @@ a filter. The default as defined by start and end parameters is all non-edge map
           for x from (first start) below (+ width (first end))
           do (loop for y from (second start) below (+ height (second end))
                    for tile = (tile x y)
-                   for neighbors = (get-neighbors tile func start end)
+                   for neighbors = (get-neighbors tile func)
                    when (funcall filter tile neighbors)
                      do (let ((value (funcall effect tile neighbors)))
                           (setf map-affected-p (or map-affected-p value))))
@@ -113,15 +103,16 @@ a filter. The default as defined by start and end parameters is all non-edge map
         (region-id tile) nil)
   (with-slots (x y) tile
     (with-slots (n s e w) neighbors
-      (let* ((dirs (remove-if #'null `((,(tile x (1- y)) . ,n)
-                                       (,(tile x (1+ y)) . ,s)
-                                       (,(tile (1+ x) y) . ,e)
-                                       (,(tile (1- x) y) . ,w))
-                              :key #'cdr))
-             (new-neighbors (get-neighbors (caar dirs) #'walkablep '(1 1) '(-1 -1))))
-        (when (and (= (length dirs) 1)
-                   (dead-end-p (caar dirs) new-neighbors))
-          (list (caar dirs) new-neighbors))))))
+      (let ((dirs (remove nil `(((,x ,(1- y)) . ,n)
+                                ((,x ,(1+ y)) . ,s)
+                                ((,(1+ x) ,y) . ,e)
+                                ((,(1- x) ,y) . ,w))
+                          :key #'cdr)))
+        (when (= (length dirs) 1)
+          (let* ((next-tile (apply #'tile (caar dirs)))
+                 (next-neighbors (get-neighbors next-tile #'walkablep)))
+            (when (dead-end-p next-tile next-neighbors)
+              (list next-tile next-neighbors))))))))
 
 (defun make-connector (tile neighbors)
   "Mark a tile as a connector between two regions."
