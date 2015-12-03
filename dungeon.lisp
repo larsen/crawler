@@ -29,7 +29,7 @@
                                    :w w
                                    :h h
                                    :tile-size tile-size
-                                   :tile-map (make-array (* w h))))
+                                   :tile-map (make-array `(,w ,h))))
     (when (attr 'debugp)
       (format t "Random seed: ~a~%" (random-seed *generator*)))
     (generate-dungeon)))
