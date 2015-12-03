@@ -3,7 +3,9 @@
 (defvar *generator* nil)
 
 (defclass generator (random-number-generation-mixin)
-  ((windiness :accessor windiness
+  ((debugp :accessor debugp
+           :initform nil)
+   (windiness :accessor windiness
               :initform 0)
    (room-density :accessor room-density
                  :initform 0.65)
@@ -26,7 +28,8 @@
 
 (defun get-attrs ()
   "Get a list of all generator attributes and their values."
-  (list :windiness (attr 'windiness)
+  (list :debugp (attr 'debugp)
+        :windiness (attr 'windiness)
         :room-density (attr 'room-density)
         :room-size-min (attr 'room-size-min)
         :room-size-max (attr 'room-size-max)

@@ -58,9 +58,9 @@ area."
      :se (get-tile-data (tile (1+ x) (1+ y)) func start end)
      :sw (get-tile-data (tile (1- x) (1+ y)) func start end))))
 
-(defun map-tiles (filter func effect &key (start '(0 0)) (end '(0 0)))
+(defun map-tiles (filter func effect &key (start '(1 1)) (end '(-1 -1)))
   "Loop over all tiles within a specified area, calling an effect for each tile that passes through
-a filter."
+a filter. The default as defined by start and end parameters is all non-edge map tiles."
   (with-slots (width height) *dungeon*
     (loop with map-affected-p
           for x from (first start) below (+ width (first end))
@@ -71,6 +71,22 @@ a filter."
                      do (let ((value (funcall effect tile neighbors)))
                           (setf map-affected-p (or map-affected-p value))))
           finally (return map-affected-p))))
+
+(defun collect-tiles (filter func processor &key (start '(1 1)) (end '(-1 -1)))
+  "Collect filtered map tiles into a list, and run a processor on them."
+  (let ((tiles))
+    (map-tiles
+     filter
+     func
+     (lambda (tile neighbors) (push (list tile neighbors) tiles))
+     :start start
+     :end end)
+    (loop while tiles
+          do (loop with (tile neighbors) = (pop tiles)
+                   while (funcall filter tile neighbors)
+                   for new = (funcall processor tile neighbors)
+                   when new
+                     do (push new tiles)))))
 
 (defun carvablep (tile neighbors)
   "Check if a tile and all of its neighbors are unwalkable."
@@ -90,6 +106,22 @@ a filter."
     (let ((dirs (remove-if #'identity (list n s e w))))
       (and (walkablep tile)
            (>= (length dirs) 3)))))
+
+(defun erode-dead-end (tile neighbors)
+  "Remove a dead-end tile, and return the next dead-end adjacent to it."
+  (setf (walkablep tile) nil
+        (region-id tile) nil)
+  (with-slots (x y) tile
+    (with-slots (n s e w) neighbors
+      (let* ((dirs (remove-if #'null `((,(tile x (1- y)) . ,n)
+                                       (,(tile x (1+ y)) . ,s)
+                                       (,(tile (1+ x) y) . ,e)
+                                       (,(tile (1- x) y) . ,w))
+                              :key #'cdr))
+             (new-neighbors (get-neighbors (caar dirs) #'walkablep '(1 1) '(-1 -1))))
+        (when (and (= (length dirs) 1)
+                   (dead-end-p (caar dirs) new-neighbors))
+          (list (caar dirs) new-neighbors))))))
 
 (defun make-connector (tile neighbors)
   "Mark a tile as a connector between two regions."

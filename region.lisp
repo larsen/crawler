@@ -27,9 +27,9 @@
         (connected (get-region connected-id)))
     (with-slots (connectors) *dungeon*
       (dolist (tile (connectors region))
-        (let ((connector (adjacent-regions tile)))
-          (when (and (member region-id connector)
-                     (member connected-id connector))
+        (let ((adjacent (adjacent-regions tile)))
+          (when (and (member region-id adjacent)
+                     (member connected-id adjacent))
             (deletef (connectors region) tile)
             (deletef (connectors connected) tile)))))))
 
@@ -43,9 +43,14 @@
               (substitute to from (adjacent-regions tile)))
         (push tile (connectors to-region))))))
 
-(defun merge-region (region-id connector)
-  "Merge a region with another by carving the specified connector into a junction."
-  (let ((connected (get-connected-region region-id connector)))
-    (make-junction connector)
-    (remove-extra-connectors region-id connected)
-    (move-connectors connected region-id)))
+(defun create-junctions ()
+  "Join all regions by carving some connectors into junctions."
+  (with-slots (regions) *dungeon*
+    (loop with region-id = (rng 'elt :list (hash-table-keys regions))
+          while (connectors (gethash region-id regions))
+          for connector = (random-connector region-id)
+          for connected = (get-connected-region region-id connector)
+          do (make-junction connector)
+             (remove-extra-connectors region-id connected)
+             (move-connectors connected region-id))
+    (map-tiles #'connectorp #'region-id #'make-extra-junction)))

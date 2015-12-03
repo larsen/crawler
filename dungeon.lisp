@@ -30,16 +30,17 @@
                                    :h h
                                    :tile-size tile-size
                                    :tile-map (make-array (* w h))))
-    (format t "Random seed: ~a~%" (random-seed *generator*))
-    (generate attrs)))
+    (when (attr 'debugp)
+      (format t "Random seed: ~a~%" (random-seed *generator*)))
+    (generate-dungeon)))
 
-(defun generate (attrs)
+(defun generate-dungeon ()
   "Generate all parts of the dungeon."
   (create-walls)
   (create-rooms)
   (create-corridors)
   (create-connectors)
-  (combine-regions)
+  (create-junctions)
   (remove-dead-ends)
   *dungeon*)
 
@@ -61,48 +62,12 @@
 
 (defun create-corridors ()
   "Carve out corridors from the remaining walls around rooms."
-  (map-tiles #'carvablep #'walkablep #'carve :start '(1 1) :end '(-1 -1)))
+  (map-tiles #'carvablep #'walkablep #'carve))
 
 (defun create-connectors ()
   "Mark all tiles that can connect two different regions."
-  (map-tiles #'connectorp #'region-id #'make-connector :start '(1 1) :end '(-1 -1)))
-
-(defun combine-regions ()
-  "Join all regions by carving some connectors into junctions."
-  (with-slots (regions) *dungeon*
-    (loop with region-id = (rng 'elt :list (hash-table-keys regions))
-          while (connectors (gethash region-id regions))
-          for connector = (random-connector region-id)
-          do (merge-region region-id connector))
-    (map-tiles #'connectorp #'region-id #'make-extra-junction :start '(1 1) :end '(-1 -1))))
+  (map-tiles #'connectorp #'region-id #'make-connector))
 
 (defun remove-dead-ends ()
   "Remove all dead-end tiles, resulting in corridors that only lead to rooms and other corridors."
-  (let ((dead-ends))
-    (map-tiles
-     #'dead-end-p
-     #'walkablep
-     (lambda (tile neighbors) (push (list tile neighbors) dead-ends))
-     :start '(1 1) :end '(-1 -1))
-    (loop while dead-ends
-          do (loop with (tile neighbors) = (pop dead-ends)
-                   while (dead-end-p tile neighbors)
-                   for new = (contract-dead-end tile neighbors)
-                   when new
-                     do (push new dead-ends)))))
-
-(defun contract-dead-end (tile neighbors)
-  "Remove a dead-end tile, and return the next dead-end adjacent to it."
-  (setf (walkablep tile) nil
-        (region-id tile) nil)
-  (with-slots (x y) tile
-    (with-slots (n s e w) neighbors
-      (let* ((dirs (remove-if #'null `((,(tile x (1- y)) . ,n)
-                                       (,(tile x (1+ y)) . ,s)
-                                       (,(tile (1+ x) y) . ,e)
-                                       (,(tile (1- x) y) . ,w))
-                              :key #'cdr))
-             (new-neighbors (get-neighbors (caar dirs) #'walkablep '(1 1) '(-1 -1))))
-        (when (and (= (length dirs) 1)
-                   (dead-end-p (caar dirs) new-neighbors))
-          (list (caar dirs) new-neighbors))))))
+  (collect-tiles #'dead-end-p #'walkablep #'erode-dead-end))
