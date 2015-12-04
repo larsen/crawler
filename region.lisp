@@ -5,9 +5,7 @@
        :initarg :id
        :initform nil)
    (connectors :accessor connectors
-               :initform nil)
-   (tiles :accessor tiles
-          :initform nil)))
+               :initform nil)))
 
 (defun get-region (id)
   "Get a region instance from the specified ID."
@@ -25,23 +23,21 @@
   "Remove extra connector tiles no longer needed."
   (let ((region (get-region region-id))
         (connected (get-region connected-id)))
-    (with-slots (connectors) *dungeon*
-      (dolist (tile (connectors region))
-        (let ((adjacent (adjacent-regions tile)))
-          (when (and (member region-id adjacent)
-                     (member connected-id adjacent))
-            (deletef (connectors region) tile)
-            (deletef (connectors connected) tile)))))))
+    (dolist (tile (connectors region))
+      (let ((adjacent (adjacent-regions tile)))
+        (when (and (member region-id adjacent)
+                   (member connected-id adjacent))
+          (deletef (connectors region) tile)
+          (deletef (connectors connected) tile))))))
 
 (defun move-connectors (from to)
   "Move connectors of a region to the new region after it has been merged."
   (let ((from-region (get-region from))
         (to-region (get-region to)))
-    (with-slots (connectors) *dungeon*
-      (dolist (tile (connectors from-region))
-        (setf (adjacent-regions tile)
-              (substitute to from (adjacent-regions tile)))
-        (push tile (connectors to-region))))))
+    (dolist (tile (connectors from-region))
+      (setf (adjacent-regions tile)
+            (substitute to from (adjacent-regions tile)))
+      (push tile (connectors to-region)))))
 
 (defun create-junctions ()
   "Join all regions by carving some connectors into junctions."

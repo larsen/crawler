@@ -117,10 +117,9 @@ a filter. The default as defined by start and end parameters is all non-edge map
 (defun make-connector (tile neighbors)
   "Mark a tile as a connector between two regions."
   (with-slots (n s e w) neighbors
-    (with-slots (connectors) *dungeon*
-      (setf (adjacent-regions tile) (remove nil (list n s e w)))
-      (dolist (region-id (adjacent-regions tile))
-        (push tile (connectors (get-region region-id)))))))
+    (setf (adjacent-regions tile) (remove nil (list n s e w)))
+    (dolist (region-id (adjacent-regions tile))
+      (push tile (connectors (get-region region-id))))))
 
 (defun make-wall (tile neighbors)
   "Mark a tile as unwalkable and remove its region."
