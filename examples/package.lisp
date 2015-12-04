@@ -11,6 +11,7 @@
                 #:with-pen
                 #:make-pen
                 #:gray
+                #:rgb
                 #:background)
   (:export #:random-dungeon))
 

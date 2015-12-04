@@ -11,8 +11,8 @@
               :initarg :region-id)
    (adjacent-regions :accessor adjacent-regions
                      :initform nil)
-   (junctionp :accessor junctionp
-              :initform nil)
+   (map-featurep :accessor map-feature-p
+                 :initform nil)
    (attrs :accessor attrs
           :initform nil)))
 
@@ -60,8 +60,8 @@ a filter. The default as defined by start and end parameters is all non-edge map
                           (setf map-affected-p (or map-affected-p value))))
           finally (return map-affected-p))))
 
-(defun collect-tiles (filter func processor &key (start '(1 1)) (end '(-1 -1)))
-  "Collect filtered map tiles into a list, and run a processor on them."
+(defun collect-tiles (filter func &key (start '(1 1)) (end '(-1 -1)))
+  "Collect a list of filtered map tiles."
   (let ((tiles))
     (map-tiles
      filter
@@ -69,12 +69,17 @@ a filter. The default as defined by start and end parameters is all non-edge map
      (lambda (tile neighbors) (push (list tile neighbors) tiles))
      :start start
      :end end)
-    (loop while tiles
-          do (loop with (tile neighbors) = (pop tiles)
-                   while (funcall filter tile neighbors)
-                   for new = (funcall processor tile neighbors)
-                   when new
-                     do (push new tiles)))))
+    tiles))
+
+(defun process-tiles (filter func processor)
+  "Run a processor on a list of filtered map tiles."
+  (loop with tiles = (collect-tiles filter func)
+        while tiles
+        do (loop with (tile neighbors) = (pop tiles)
+                 while (funcall filter tile neighbors)
+                 for new = (funcall processor tile neighbors)
+                 when new
+                   do (push new tiles))))
 
 (defun carvablep (tile neighbors)
   "Check if a tile and all of its neighbors are unwalkable."
@@ -126,20 +131,21 @@ a filter. The default as defined by start and end parameters is all non-edge map
         (region-id tile) nil)
   tile)
 
-(defun adjacent-junction-p (tile)
+(defun adjacent-junction-p (tile &optional neighbors)
   "Check if a tile has a junction adjacent to it."
+  (declare (ignore neighbors))
   (with-slots (x y) tile
-    (or (junctionp (tile x (1- y)))
-        (junctionp (tile x (1+ y)))
-        (junctionp (tile (1- x) y))
-        (junctionp (tile (1+ x) y)))))
+    (or (eq (map-feature-p (tile x (1- y))) :junction)
+        (eq (map-feature-p (tile x (1+ y))) :junction)
+        (eq (map-feature-p (tile (1- x) y)) :junction)
+        (eq (map-feature-p (tile (1+ x) y)) :junction))))
 
 (defun make-junction (tile)
   "Mark a tile as a junction between two regions if it has no adjacent junctions."
   (unless (adjacent-junction-p tile)
-    (setf (region-id tile) 0
-          (walkablep tile) t
-          (junctionp tile) t)))
+    (setf (walkablep tile) t
+          (region-id tile) nil
+          (map-feature-p tile) :junction)))
 
 (defun make-extra-junction (tile neighbors)
   "Check if a tile should become an extra junction, and mark it as such if so."

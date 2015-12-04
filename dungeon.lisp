@@ -42,6 +42,7 @@
   (create-connectors)
   (create-junctions)
   (remove-dead-ends)
+  (create-stairs)
   *dungeon*)
 
 (defun create-walls ()
@@ -70,4 +71,11 @@
 
 (defun remove-dead-ends ()
   "Remove all dead-end tiles, resulting in corridors that only lead to rooms and other corridors."
-  (collect-tiles #'dead-end-p #'walkablep #'erode-dead-end))
+  (process-tiles #'dead-end-p #'walkablep #'erode-dead-end))
+
+(defun create-stairs ()
+  "Create stairs for the entrance and exit.
+TODO: Create exit stairs."
+  (let* ((entrance (rng 'elt :list (rooms *dungeon*)))
+         (stairs-up (room-stairs-location entrance)))
+    (setf (map-feature-p stairs-up) :stairs-up)))

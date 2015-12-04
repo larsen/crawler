@@ -13,6 +13,7 @@
            #:tile-size
            #:walkablep
            #:region-id
+           #:map-feature-p
            #:get-attrs))
 
 (in-package :crawler)

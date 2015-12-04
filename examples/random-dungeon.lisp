@@ -15,14 +15,24 @@
 (define-sketch-setup random-dungeon
   (background (gray 0)))
 
+(defmethod select-color (x y)
+  (let ((tile (tile x y)))
+    (cond
+      ((eq (map-feature-p tile) :stairs-up)
+       (rgb 1 0 0))
+      ((eq (map-feature-p tile) :junction)
+       (rgb 0.1 0.5 1))
+      ((walkablep tile)
+       (gray 1))
+      (t (gray 0.2)))))
+
 (defmethod draw-tile (x y)
-  (let ((color (if (walkablep (tile x y)) (gray 1) (gray 0.2))))
-    (with-slots (tile-size) *dungeon*
-      (with-pen (make-pen :fill color)
-        (rect (* x tile-size)
-              (* y tile-size)
-              (- tile-size 1)
-              (- tile-size 1))))))
+  (with-slots (tile-size) *dungeon*
+    (with-pen (make-pen :fill (select-color x y))
+      (rect (* x tile-size)
+            (* y tile-size)
+            (- tile-size 1)
+            (- tile-size 1)))))
 
 (defmethod mousebutton-event ((window random-dungeon) state ts button x y)
   (with-slots (width height tile-size) *dungeon*
