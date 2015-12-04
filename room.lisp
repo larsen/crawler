@@ -12,8 +12,7 @@
    (width :reader width
           :initarg :w)
    (height :reader height
-           :initarg :h)
-   (region-id :accessor region-id)))
+           :initarg :h)))
 
 (defmethod initialize-instance :after ((o dungeon-room) &key)
   (with-slots (x1 x2 y1 y2 width height) o
@@ -47,15 +46,14 @@ minimum and maximum room sizes"
 
 (defun add-to-dungeon (room)
   "Add the given room to the dungeon."
-  (with-slots (x1 x2 y1 y2 region-id) room
-    (with-slots (rooms regions current-region) *dungeon*
-      (setf region-id (incf current-region)
-            (gethash region-id regions) (make-instance 'region :id region-id))
-      (loop for x from x1 below x2
-            do (loop for y from y1 below y2
-                     for tile = (make-tile x y :walkablep t :region-id region-id)
-                     do (setf (tile x y) tile)))
-      (push room rooms))))
+  (with-slots (x1 x2 y1 y2) room
+    (loop with region-id = (make-region)
+          for x from x1 below x2
+          do (loop for y from y1 below y2
+                   for tile = (tile x y)
+                   do (setf (walkablep tile) t
+                            (region-id tile) region-id)))
+    (push room (rooms *dungeon*))))
 
 (defun create-room ()
   "Create a room with a random size and location, placing it in the dungeon."

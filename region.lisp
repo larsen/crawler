@@ -7,6 +7,13 @@
    (connectors :accessor connectors
                :initform nil)))
 
+(defun make-region ()
+  "Create a new region."
+  (with-slots (current-region regions) *dungeon*
+    (let ((id (incf current-region)))
+      (setf (gethash id regions) (make-instance 'region :id id))
+      id)))
+
 (defun get-region (id)
   "Get a region instance from the specified ID."
   (gethash id (regions *dungeon*)))

@@ -44,11 +44,9 @@
 (defun carve (tile neighbors)
   "Carve all tiles into a corridor starting at the specified tile."
   (declare (ignore neighbors))
-  (with-slots (regions current-region) *dungeon*
-    (with-slots (x y walkablep region-id) tile
-      (setf walkablep t
-            region-id (incf current-region)
-            (gethash region-id regions) (make-instance 'region :id region-id))
-      (loop with cells = `((,x ,y))
-            while cells
-            do (setf cells (carve-tile cells))))))
+  (with-slots (x y walkablep region-id) tile
+    (setf walkablep t
+          region-id (make-region))
+    (loop with cells = `((,x ,y))
+          while cells
+          do (setf cells (carve-tile cells)))))
