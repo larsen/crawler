@@ -48,7 +48,7 @@ minimum and maximum room sizes"
 (defun add-to-dungeon (room)
   "Add the given room to the dungeon."
   (with-slots (x1 x2 y1 y2 region-id) room
-    (with-slots (tile-map rooms regions current-region) *dungeon*
+    (with-slots (rooms regions current-region) *dungeon*
       (setf region-id (incf current-region)
             (gethash region-id regions) (make-instance 'region :id region-id))
       (loop for x from x1 below x2

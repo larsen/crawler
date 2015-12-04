@@ -46,7 +46,7 @@
 
 (defun create-walls ()
   "Fill the dungeon with all wall tiles."
-  (with-slots (width height tile-map) *dungeon*
+  (with-slots (width height) *dungeon*
     (loop for x below width
           do (loop for y below height
                    do (setf (tile x y) (make-tile x y))))))

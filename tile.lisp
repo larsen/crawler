@@ -26,13 +26,11 @@
 
 (defun tile (x y)
   "Get a tile instance with the specified coordinates from the tile map array."
-  (with-slots (width tile-map) *dungeon*
-    (aref tile-map x y)))
+  (aref (tile-map *dungeon*) x y))
 
 (defun (setf tile) (tile x y)
   "Add a tile instance with the specified coordinates to the tile map array."
-  (with-slots (width tile-map) *dungeon*
-    (setf (aref tile-map x y) tile)))
+  (setf (aref (tile-map *dungeon*) x y) tile))
 
 (defun get-neighbors (tile func)
   "Create a structure containing data for all of a tile's neighbors that are within a specified
