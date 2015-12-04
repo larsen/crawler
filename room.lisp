@@ -54,8 +54,7 @@ minimum and maximum room sizes"
       (loop for x from x1 below x2
             do (loop for y from y1 below y2
                      for tile = (make-tile x y :walkablep t :region-id region-id)
-                     do (setf (tile x y) tile)
-                        (push tile (tiles (gethash region-id regions)))))
+                     do (setf (tile x y) tile)))
       (push room rooms))))
 
 (defun create-room ()

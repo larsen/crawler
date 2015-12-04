@@ -49,7 +49,6 @@
       (setf walkablep t
             region-id (incf current-region)
             (gethash region-id regions) (make-instance 'region :id region-id))
-      (push tile (tiles (gethash region-id regions)))
       (loop with cells = `((,x ,y))
             while cells
             do (setf cells (carve-tile cells))))))
