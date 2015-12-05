@@ -103,7 +103,8 @@ a filter. The default as defined by start and end parameters is all non-edge map
 (defun erode-dead-end (tile neighbors)
   "Remove a dead-end tile, and return the next dead-end adjacent to it."
   (setf (walkablep tile) nil
-        (region-id tile) nil)
+        (region-id tile) nil
+        (map-feature-p tile) nil)
   (with-slots (x y) tile
     (with-slots (n s e w) neighbors
       (let ((dirs (remove nil `(((,x ,(1- y)) . ,n)
