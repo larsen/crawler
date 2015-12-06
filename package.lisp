@@ -3,7 +3,8 @@
 (defpackage #:crawler
   (:use #:cl
         #:alexandria
-        #:cl-variates)
+        #:cl-variates
+        #:cl-heap)
   (:export #:make-dungeon
            #:*dungeon*
            #:width
@@ -13,7 +14,7 @@
            #:tile-size
            #:walkablep
            #:region-id
-           #:map-feature-p
+           #:map-feature
            #:get-attrs))
 
 (in-package :crawler)

@@ -14,7 +14,7 @@
    (room-size-max :accessor room-size-max
                   :initform 11)
    (junction-rate :accessor junction-rate
-                  :initform 0.1)))
+                  :initform 0.03)))
 
 (defun attr (name)
   "Get a generator attribute value given its name."

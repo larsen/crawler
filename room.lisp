@@ -71,14 +71,3 @@ minimum and maximum room sizes"
                       (<= (y1 new-room) (y2 room))
                       (>= (y2 new-room) (y1 room)))
              (return room))))
-
-(defun room-stairs-location (room)
-  "Find a good location for stairs in this room such that they are not blocking a junction."
-  (with-slots (width height) *dungeon*
-    (with-slots (x1 y1 x2 y2) room
-      (let ((locations (collect-tiles
-                        (lambda (tile neighbors) (not (adjacent-junction-p tile neighbors)))
-                        #'walkablep
-                        :start (list x1 y1)
-                        :end (list (- x2 width) (- y2 height)))))
-        (first (rng 'elt :list locations))))))

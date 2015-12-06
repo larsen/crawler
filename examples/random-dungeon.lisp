@@ -18,9 +18,11 @@
 (defmethod select-color (x y)
   (let ((tile (tile x y)))
     (cond
-      ((eq (map-feature-p tile) :stairs-up)
+      ((eq (map-feature tile) :stairs-up)
        (rgb 1 0 0))
-      ((eq (map-feature-p tile) :junction)
+      ((eq (map-feature tile) :stairs-down)
+       (rgb 0 1 0))
+      ((eq (map-feature tile) :junction)
        (rgb 0.1 0.5 1))
       ((walkablep tile)
        (gray 1))
