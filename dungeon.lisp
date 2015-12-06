@@ -7,8 +7,6 @@
           :initarg :w)
    (height :reader height
            :initarg :h)
-   (tile-size :reader tile-size
-              :initarg :tile-size)
    (rooms :accessor rooms
           :initform nil)
    (regions :accessor regions
@@ -18,7 +16,7 @@
    (tile-map :accessor tile-map
              :initarg :tile-map)))
 
-(defun make-dungeon (w h tile-size &rest attrs)
+(defun make-dungeon (w h &rest attrs)
   "Top-level dungeon creator."
   (make-generator attrs)
   (when (and (oddp w)
@@ -28,7 +26,6 @@
     (setf *dungeon* (make-instance 'dungeon
                                    :w w
                                    :h h
-                                   :tile-size tile-size
                                    :tile-map (make-array `(,w ,h))))
     (when (attr 'debugp)
       (format t "Random seed: ~a~%" (random-seed *generator*)))

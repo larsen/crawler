@@ -1,10 +1,8 @@
 (in-package :crawler-examples)
 
-(defparameter *draw-modes* '(walkable))
-
 (defsketch random-dungeon (:title "Dungeon"
-                           :width (* (tile-size *dungeon*) (width *dungeon*))
-                           :height (* (tile-size *dungeon*) (height *dungeon*))
+                           :width (* 10 (width *dungeon*))
+                           :height (* 10 (height *dungeon*))
                            :debug :scancode-grave)
     ()
   (with-slots (width height) *dungeon*
@@ -29,24 +27,20 @@
       (t (gray 0.2)))))
 
 (defmethod draw-tile (x y)
-  (with-slots (tile-size) *dungeon*
-    (with-pen (make-pen :fill (select-color x y))
-      (rect (* x tile-size)
-            (* y tile-size)
-            (- tile-size 1)
-            (- tile-size 1)))))
+  (with-pen (make-pen :fill (select-color x y))
+    (rect (* x 10) (* y 10) 9 9)))
 
 (defmethod mousebutton-event ((window random-dungeon) state ts button x y)
-  (with-slots (width height tile-size) *dungeon*
+  (with-slots (width height) *dungeon*
     (when (eq state :MOUSEBUTTONUP)
       (when (eql button 1)
-        (apply #'make-dungeon width height tile-size (get-attrs))))))
+        (apply #'make-dungeon width height (get-attrs))))))
 
 (defmethod keyboard-event ((window random-dungeon) state ts repeat-p keysym)
   (when (eq state :KEYDOWN)
     (case (sdl2:scancode keysym)
       (:scancode-escape (close-window window)))))
 
-(defun random-dungeon (w h tile-size &rest attrs)
-  (when (apply #'make-dungeon w h tile-size attrs)
+(defun random-dungeon (w h &rest attrs)
+  (when (apply #'make-dungeon w h attrs)
     (make-instance 'random-dungeon)))
