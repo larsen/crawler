@@ -22,12 +22,11 @@
 (defun calculate-room-count (density)
   "Calculate an estimated number of rooms to generate for the specified density, based on the
 minimum and maximum room sizes"
-  (with-slots (width height) *dungeon*
-    (let* ((smallest-area (* (expt (attr 'room-size-min) 2)))
-           (largest-area (* (expt (attr 'room-size-max) 2)))
-           (average-area (/ (abs (- largest-area smallest-area)) 2))
-           (possible-rooms (/ (* width height) average-area)))
-      (floor (* possible-rooms density)))))
+  (let* ((smallest-area (* (expt (attr 'room-size-min) 2)))
+         (largest-area (* (expt (attr 'room-size-max) 2)))
+         (average-area (/ (abs (- largest-area smallest-area)) 2))
+         (possible-rooms (/ (tile-count) average-area)))
+    (floor (* possible-rooms density))))
 
 (defun generate-room-size ()
   "Generate a random room size within the minimum and maximum sizes."
