@@ -17,6 +17,14 @@ If you want to try out the example graphical dungeon generator, load the example
 
 This will create a dungeon that is 99x49 tiles, with a tile size of 10x10, just as the example images below. The example uses [Sketch](http://github.com/vydd/sketch) to display the dungeon graphically. Note that this requires having SDL2 installed on your operating system.
 
+The examples use the following colors for different tiles of the dungeon:
+
+* White: Walkable floor tiles
+* Dark gray: Un-walkable wall tiles
+* Blue: Junctions between two regions. A game can use these to make doors, etc.
+* Red: The start of the dungeon. A game can use this to place a staircase leading up, etc.
+* Green: The end of the dungeon. A game can use this to place a staircase leading down, etc.
+
 ## Input
 
 Within the example window the following input is accepted:
