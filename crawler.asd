@@ -3,7 +3,7 @@
   :author "Michael Fiano <michael.fiano@gmail.com>"
   :version "0.1"
   :license "MIT"
-  :description "A dungeon exploration game."
+  :description "A procedural dungeon generation library."
   :depends-on (#:alexandria
                #:cl-variates
                #:cl-heap)

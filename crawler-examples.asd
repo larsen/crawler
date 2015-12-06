@@ -3,7 +3,7 @@
   :author "Michael Fiano <michael.fiano@gmail.com>"
   :version "0.1"
   :license "MIT"
-  :description "Examples for the Crawler game."
+  :description "Crawler dungeon generator examples."
   :depends-on (#:crawler
                #:sketch)
   :serial t

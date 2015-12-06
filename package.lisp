@@ -18,5 +18,3 @@
            #:get-attrs))
 
 (in-package :crawler)
-
-(setf *system-name* :crawler)
