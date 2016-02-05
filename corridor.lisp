@@ -10,7 +10,7 @@
 
 (defun pick-cell (cells)
   "Select a cell to be checked whether or not it should be carved."
-  (if (> (rng 'range-i) (attr 'windiness))
+  (if (> (rng 'range-inc) (attr 'windiness))
       (rng 'elt :list cells)
       (first (last cells))))
 

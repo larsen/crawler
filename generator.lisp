@@ -1,7 +1,5 @@
 (in-package :crawler)
 
-(defvar *generator* nil)
-
 (defclass generator (random-number-generation-mixin)
   ((debugp :accessor debugp
            :initform nil)
@@ -41,47 +39,9 @@
         for name = (intern (symbol-name attr) :crawler)
         do (setf (attr name) value)))
 
-(defun make-seed ()
-  "Create a random seed for the generator."
-  (mod
-   (parse-integer
-    (shuffle
-     (format nil "~d~d"
-             (get-universal-time)
-             (get-internal-real-time))))
-   (expt 2 48)))
-
-(defun seed-valid-p (seed)
-  "Check if a random seed is valid."
-  (when (and (integerp seed)
-             (> seed 0))
-    seed))
-
-(defun set-seed (seed)
-  "Set the random seed to be used by the generator."
-  (let ((seed (or (seed-valid-p seed) (make-seed))))
-    (setf (random-seed *generator*) seed)))
-
 (defun make-generator (attrs)
   "Create a new generator."
   (setf *generator* (make-instance 'generator))
   (set-attrs attrs)
   (set-seed (getf attrs :seed))
   *generator*)
-
-(defgeneric rng (type &key)
-  (:documentation "Convenience function for generating random numbers."))
-
-(defmethod rng ((type (eql 'elt)) &key list)
-  (random-element *generator* list))
-
-(defmethod rng ((type (eql 'range-i)) &key (min 0.0) (max 1.0))
-  (random-range-inclusive *generator* min max))
-
-(defmethod rng ((type (eql 'odd-range)) &key (min 1) (max 3))
-  (when (evenp min) (decf min))
-  (let ((n (random-range-inclusive *generator* min max)))
-    (if (evenp n) (decf n) n)))
-
-(defmethod rng ((type (eql 'int)) &key (min 0) (max 1))
-  (integer-random *generator* min max))

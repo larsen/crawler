@@ -3,6 +3,7 @@
 (defpackage #:crawler
   (:use #:cl
         #:alexandria
+        #:ax.misc.rng
         #:cl-variates
         #:cl-heap)
   (:export #:make-dungeon

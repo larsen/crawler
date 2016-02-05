@@ -30,16 +30,16 @@ minimum and maximum room sizes"
 
 (defun generate-room-size ()
   "Generate a random room size within the minimum and maximum sizes."
-  (let ((w (rng 'odd-range :min (attr 'room-size-min) :max (attr 'room-size-max)))
-        (h (rng 'odd-range :min (attr 'room-size-min) :max (attr 'room-size-max))))
-    (if (< (/ (min w h) (max w h)) (rng 'range-i))
+  (let ((w (rng 'range-odd :min (attr 'room-size-min) :max (attr 'room-size-max)))
+        (h (rng 'range-odd :min (attr 'room-size-min) :max (attr 'room-size-max))))
+    (if (< (/ (min w h) (max w h)) (rng 'range-inc))
         (generate-room-size)
         (values w h))))
 
 (defun generate-room-location (width height)
   "Generate a random location in the dungeon for a room."
-  (let ((x (rng 'int :max (- (width *dungeon*) width 1)))
-        (y (rng 'int :max (- (height *dungeon*) height 1))))
+  (let ((x (rng 'range-int :max (- (width *dungeon*) width 1)))
+        (y (rng 'range-int :max (- (height *dungeon*) height 1))))
     (values (if (evenp x) (incf x) x)
             (if (evenp y) (incf y) y))))
 

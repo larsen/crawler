@@ -36,11 +36,6 @@
       (when (eql button 1)
         (apply #'make-dungeon width height (get-attrs))))))
 
-(defmethod keyboard-event ((window random-dungeon) state ts repeat-p keysym)
-  (when (eq state :KEYDOWN)
-    (case (sdl2:scancode keysym)
-      (:scancode-escape (close-window window)))))
-
 (defun random-dungeon (w h &rest attrs)
   (when (apply #'make-dungeon w h attrs)
     (make-instance 'random-dungeon)))
