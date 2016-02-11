@@ -8,14 +8,27 @@ Crawler is not included in QuickLisp yet. If you would still like to try it out,
 
 ## Usage
 
-If you want to try out the example graphical dungeon generator, load the example system and generate a dungeon with:
+If you just want to generate a dungeon without rendering it:
+
+```lisp
+(ql:quickload :crawler)
+(crawler:make-dungeon 99 49)
+```
+
+All of the data you need to render a dungeon is located in the array (tile-map *dungeon*).
+
+If you want to try out the example graphical dungeon generator graphically, load the example system and generate a dungeon with:
 
 ```lisp
 (ql:quickload :crawler-examples)
-(crawler-examples:random-dungeon 99 49 10)
+(crawler-examples:random-dungeon 99 49)
 ```
 
-This will create a dungeon that is 99x49 tiles, with a tile size of 10x10, just as the example images below. The example uses [Sketch](http://github.com/vydd/sketch) to display the dungeon graphically. Note that this requires having SDL2 installed on your operating system.
+Note: The examples require the following packages which are NOT part of Quicklisp. You must manually clone and place these libraries in Quicklisp's local-projects directory:
+* [Sketch](http://github.com/vydd/sketch)
+* [cl-sdl2-image](http://github.com/lispgames/cl-sdl2-image)
+* [cl-sdl2-ttf](http://github.com/Failproofshark/cl-sdl2-ttf)
+Additionally, Sketch requires that you have SDL2 installed with your OS.
 
 The examples use the following colors for different tiles of the dungeon:
 
@@ -36,9 +49,6 @@ Within the example window the following input is accepted:
 ![Example Dungeon](/images/example.png)
 
 ## TODO
-
-* ~~Make corridors be less windy.~~
-* ~~Enforce junctions adjacent to each other.~~
-* Many more fixes.
+* Ability to create different types of maps, such as natural cave-like systems.
 
 If you have another suggestion, just let me know, and I'll see if it makes sense to implement.
