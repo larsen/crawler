@@ -10,7 +10,7 @@
 
 (defun pick-cell (cells)
   "Select a cell to be checked whether or not it should be carved."
-  (if (> (rng 'range-inc) (attr 'windiness))
+  (if (> (rng 'range-inc) (attr :dungeon :windiness))
       (rng 'elt :list cells)
       (first (last cells))))
 
@@ -32,13 +32,13 @@
          (neighbors (neighbors (first cell) (second cell))))
     (deletef cells cell :test #'equal)
     (when neighbors
-      (loop with dir = (rng 'elt :list neighbors)
-            with new-cell = (list cell (get-cell cell dir 1))
-            for i below 2
-            for tile = (get-cell cell dir i t)
-            do (setf (walkablep tile) t
+      (loop :with dir = (rng 'elt :list neighbors)
+            :with new-cell = (list cell (get-cell cell dir 1))
+            :for i :below 2
+            :for tile = (get-cell cell dir i t)
+            :do (setf (walkablep tile) t
                      (region-id tile) (current-region *dungeon*))
-            finally (appendf cells new-cell))))
+            :finally (appendf cells new-cell))))
   cells)
 
 (defun carve (tile neighbors)
@@ -47,6 +47,6 @@
   (with-slots (x y walkablep region-id) tile
     (setf walkablep t
           region-id (make-region))
-    (loop with cells = `((,x ,y))
-          while cells
-          do (setf cells (carve-tile cells)))))
+    (loop :with cells = `((,x ,y))
+          :while cells
+          :do (setf cells (carve-tile cells)))))

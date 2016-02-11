@@ -16,20 +16,29 @@
    (tile-map :accessor tile-map
              :initarg :tile-map)))
 
+(defun set-attrs (attrs)
+  "Set the specified generator attributes."
+  (loop :for (attr . value) :in (plist-alist attrs)
+        :do (setf (attr :dungeon attr) value)))
+
+(defun make-tile-map (w h)
+  (setf *dungeon* (make-instance 'dungeon :w w :h h))
+  (with-slots (width height tile-map) *dungeon*
+    (with-attrs (room-size-max) :dungeon
+      (let ((min-size (* room-size-max 2)))
+        (when (< width min-size) (setf width min-size))
+        (when (< height min-size) (setf height min-size))
+        (when (evenp width) (incf width))
+        (when (evenp height) (incf height)))
+      (setf tile-map (make-array `(,width ,height))))))
+
 (defun make-dungeon (w h &rest attrs)
   "Top-level dungeon creator."
-  (make-generator attrs)
-  (when (and (oddp w)
-             (oddp h)
-             (>= w (* (attr 'room-size-max) 2))
-             (>= h (* (attr 'room-size-max) 2)))
-    (setf *dungeon* (make-instance 'dungeon
-                                   :w w
-                                   :h h
-                                   :tile-map (make-array `(,w ,h))))
-    (when (attr 'debugp)
-      (format t "Random seed: ~a~%" (random-seed *generator*)))
-    (generate-dungeon)))
+  (load-prototypes '("dungeon"))
+  (make-generator)
+  (set-attrs attrs)
+  (make-tile-map w h)
+  (generate-dungeon))
 
 (defun generate-dungeon ()
   "Generate all parts of the dungeon."
@@ -45,18 +54,18 @@
 (defun create-walls ()
   "Fill the dungeon with all wall tiles."
   (with-slots (width height) *dungeon*
-    (loop for x below width
-          do (loop for y below height
-                   do (setf (tile x y) (make-tile x y))))))
+    (loop :for x :below width
+          do (loop :for y :below height
+                   :do (setf (tile x y) (make-tile x y))))))
 
 (defun create-rooms ()
   "Create rooms until the desired density is reached."
-  (loop with max-rooms = (calculate-room-count (attr 'room-density))
-        with tries = 0
-        until (or (= (length (rooms *dungeon*)) max-rooms)
-                  (>= tries 1000))
-        do (create-room)
-           (incf tries)))
+  (loop :with max-rooms = (calculate-room-count (attr :dungeon :room-density))
+        :with tries = 0
+        :until (or (= (length (rooms *dungeon*)) max-rooms)
+                   (>= tries 1000))
+        :do (create-room)
+            (incf tries)))
 
 (defun create-corridors ()
   "Carve out corridors from the remaining walls around rooms."

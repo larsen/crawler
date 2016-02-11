@@ -22,19 +22,22 @@
 (defun calculate-room-count (density)
   "Calculate an estimated number of rooms to generate for the specified density, based on the
 minimum and maximum room sizes"
-  (let* ((smallest-area (* (expt (attr 'room-size-min) 2)))
-         (largest-area (* (expt (attr 'room-size-max) 2)))
-         (average-area (/ (abs (- largest-area smallest-area)) 2))
-         (possible-rooms (/ (tile-count) average-area)))
-    (floor (* possible-rooms density))))
+  (with-slots (width height) *dungeon*
+    (with-attrs (room-size-min room-size-max) :dungeon
+      (let* ((smallest-area (* (expt room-size-min 2)))
+             (largest-area (* (expt room-size-max 2)))
+             (average-area (/ (abs (- largest-area smallest-area)) 2))
+             (possible-rooms (/ (* width height) average-area)))
+        (floor (* possible-rooms density))))))
 
 (defun generate-room-size ()
   "Generate a random room size within the minimum and maximum sizes."
-  (let ((w (rng 'range-odd :min (attr 'room-size-min) :max (attr 'room-size-max)))
-        (h (rng 'range-odd :min (attr 'room-size-min) :max (attr 'room-size-max))))
-    (if (< (/ (min w h) (max w h)) (rng 'range-inc))
-        (generate-room-size)
-        (values w h))))
+  (with-attrs (room-size-min room-size-max) :dungeon
+    (let ((w (rng 'range-odd :min room-size-min :max room-size-max))
+          (h (rng 'range-odd :min room-size-min :max room-size-max)))
+      (if (< (/ (min w h) (max w h)) (rng 'range-inc))
+          (generate-room-size)
+          (values w h)))))
 
 (defun generate-room-location (width height)
   "Generate a random location in the dungeon for a room."
@@ -46,11 +49,11 @@ minimum and maximum room sizes"
 (defun add-to-dungeon (room)
   "Add the given room to the dungeon."
   (with-slots (x1 x2 y1 y2) room
-    (loop with region-id = (make-region)
-          for x from x1 below x2
-          do (loop for y from y1 below y2
-                   for tile = (tile x y)
-                   do (setf (walkablep tile) t
+    (loop :with region-id = (make-region)
+          :for x :from x1 :below x2
+          :do (loop :for y :from y1 :below y2
+                   :for tile = (tile x y)
+                   :do (setf (walkablep tile) t
                             (region-id tile) region-id)))
     (push room (rooms *dungeon*))))
 
@@ -64,9 +67,9 @@ minimum and maximum room sizes"
 
 (defun intersectsp (new-room)
   "Check whether a room overlaps another room."
-  (loop for room in (rooms *dungeon*)
-        do (when (and (<= (x1 new-room) (x2 room))
-                      (>= (x2 new-room) (x1 room))
-                      (<= (y1 new-room) (y2 room))
-                      (>= (y2 new-room) (y1 room)))
-             (return room))))
+  (loop :for room in (rooms *dungeon*)
+        :do (when (and (<= (x1 new-room) (x2 room))
+                       (>= (x2 new-room) (x1 room))
+                       (<= (y1 new-room) (y2 room))
+                       (>= (y2 new-room) (y1 room)))
+              (return room))))

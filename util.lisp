@@ -2,7 +2,16 @@
 
 (defmacro converge (&body body)
   "Convenience macro for looping over body until it does not return true."
-  `(loop while ,@body))
+  `(loop :while ,@body))
+
+(defun get-path (dir file)
+  (let ((path (format nil "~A/~@[~A~]" dir file)))
+    (asdf/system:system-relative-pathname :crawler path)))
+
+(defun read-file (file-path)
+  (let ((*read-eval* nil))
+    (with-open-file (in file-path :direction :input)
+      (read in))))
 
 #+sbcl
 (defmacro profile (width height &key (count 1))

@@ -14,7 +14,7 @@
    (map-feature :accessor map-feature
                 :initform nil)
    (distance :accessor distance
-             :initform (tile-count))
+             :initform most-positive-fixnum)
    (attrs :accessor attrs
           :initform nil)))
 
@@ -57,15 +57,15 @@ area."
   "Loop over all tiles within a specified area, calling an effect for each tile that passes through
 a filter. The default as defined by start and end parameters is all non-edge map tiles."
   (with-slots (width height) *dungeon*
-    (loop with map-affected-p
-          for x from (first start) below (+ width (first end))
-          do (loop for y from (second start) below (+ height (second end))
-                   for tile = (tile x y)
-                   for neighbors = (get-neighbors tile func)
-                   when (funcall filter tile neighbors)
-                     do (let ((value (funcall effect tile neighbors)))
-                          (setf map-affected-p (or map-affected-p value))))
-          finally (return map-affected-p))))
+    (loop :with map-affected-p
+          :for x :from (first start) :below (+ width (first end))
+          :do (loop :for y :from (second start) :below (+ height (second end))
+                    :for tile = (tile x y)
+                    :for neighbors = (get-neighbors tile func)
+                    :when (funcall filter tile neighbors)
+                      :do (let ((value (funcall effect tile neighbors)))
+                            (setf map-affected-p (or map-affected-p value))))
+          :finally (return map-affected-p))))
 
 (defun collect-tiles (filter func &key (start '(1 1)) (end '(-1 -1)))
   "Collect a list of filtered map tiles."
@@ -80,13 +80,13 @@ a filter. The default as defined by start and end parameters is all non-edge map
 
 (defun process-tiles (filter func processor)
   "Run a processor on a list of filtered map tiles."
-  (loop with tiles = (collect-tiles filter func)
-        while tiles
-        do (loop with (tile neighbors) = (pop tiles)
-                 while (funcall filter tile neighbors)
-                 for new = (funcall processor tile neighbors)
-                 when new
-                   do (push new tiles))))
+  (loop :with tiles = (collect-tiles filter func)
+        :while tiles
+        :do (loop :with (tile neighbors) = (pop tiles)
+                  :while (funcall filter tile neighbors)
+                  :for new = (funcall processor tile neighbors)
+                  :when new
+                    :do (push new tiles))))
 
 (defun carvablep (tile neighbors)
   "Check if a tile and all of its neighbors are unwalkable."
@@ -157,5 +157,5 @@ a filter. The default as defined by start and end parameters is all non-edge map
 (defun make-extra-junction (tile neighbors)
   "Check if a tile should become an extra junction, and mark it as such if so."
   (declare (ignore neighbors))
-  (when (< (rng 'range-inc) (attr 'junction-rate))
+  (when (< (rng 'range-inc) (attr :dungeon :junction-rate))
     (make-junction tile)))

@@ -34,7 +34,7 @@
   (with-slots (width height) *dungeon*
     (when (eq state :MOUSEBUTTONUP)
       (when (eql button 1)
-        (apply #'make-dungeon width height (get-attrs))))))
+        (apply #'make-dungeon width height (attrs-plist :dungeon))))))
 
 (defun random-dungeon (w h &rest attrs)
   (when (apply #'make-dungeon w h attrs)
