@@ -15,7 +15,7 @@ If you just want to generate a dungeon without rendering it:
 (crawler:make-dungeon 99 49)
 ```
 
-All of the data you need to render a dungeon is located in the array (tile-map *dungeon*).
+All of the data you need to render a dungeon is located in the array `(tile-map *dungeon*)`.
 
 If you want to try out the example graphical dungeon generator graphically, load the example system and generate a dungeon with:
 
