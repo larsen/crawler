@@ -3,8 +3,7 @@
 (defpackage #:crawler
   (:use #:cl
         #:alexandria
-        #:cl-variates
-        #:cl-heap)
+        #:cl-variates)
   (:export #:make-dungeon
            #:*dungeon*
            #:width

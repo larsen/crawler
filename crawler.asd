@@ -5,8 +5,7 @@
   :license "MIT"
   :description "A procedural dungeon generation library."
   :depends-on (#:alexandria
-               #:cl-variates
-               #:cl-heap)
+               #:cl-variates)
   :serial t
   :components ((:file "package")
                (:file "random")

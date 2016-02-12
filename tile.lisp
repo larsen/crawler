@@ -14,7 +14,7 @@
    (map-feature :accessor map-feature
                 :initform nil)
    (distance :accessor distance
-             :initform most-positive-fixnum)
+             :initform -1)
    (attrs :accessor attrs
           :initform nil)))
 
@@ -52,6 +52,12 @@ area."
      :ne (funcall func (tile (1+ x) (1- y)))
      :se (funcall func (tile (1+ x) (1+ y)))
      :sw (funcall func (tile (1- x) (1+ y))))))
+
+(defun walkable-neighbors (tile)
+  "Get a list of tile neighbors that are walkable."
+  (let ((neighbors (get-neighbors tile #'identity)))
+    (with-slots (n s e w) neighbors
+      (remove-if (lambda (x) (not (walkablep x))) (list n s e w)))))
 
 (defun map-tiles (filter func effect &key (start '(1 1)) (end '(-1 -1)))
   "Loop over all tiles within a specified area, calling an effect for each tile that passes through
