@@ -37,7 +37,8 @@
             :for i :below 2
             :for tile = (get-cell cell dir i t)
             :do (setf (walkablep tile) t
-                     (region-id tile) (current-region *dungeon*))
+                      (region-id tile) (current-region *dungeon*))
+                (pushnew :corridor (map-features tile))
             :finally (appendf cells new-cell))))
   cells)
 

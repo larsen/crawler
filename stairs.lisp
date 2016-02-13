@@ -22,8 +22,8 @@
   (unless (queue-empty-p queue)
     (pop (queue-items queue))))
 
-(defun stairs-valid-p ()
-  "Get a list of tiles where stairs are allowed to be placed."
+(defun upstairs-choices ()
+  "Get a list of tiles in a random room where an entrance staircase can be placed."
   (with-slots (width height rooms) *dungeon*
     (with-slots (x1 y1 x2 y2) (rng 'elt :list rooms)
       (mapcar #'first
@@ -35,9 +35,9 @@
 
 (defun create-upstairs ()
   "Create the entrance staircase."
-  (let ((tile (rng 'elt :list (stairs-valid-p))))
-    (setf (map-feature tile) :stairs-up
-          (distance tile) 0)
+  (let ((tile (rng 'elt :list (upstairs-choices))))
+    (pushnew :stairs-up (map-features tile))
+    (setf (distance tile) 0)
     tile))
 
 (defun create-downstairs (upstairs)
@@ -46,14 +46,17 @@
     (enqueue upstairs queue)
     (loop :until (queue-empty-p queue)
           :do (loop :with current = (dequeue queue)
-                    :for neighbor :in (walkable-neighbors current)
+                    :with neighbors = (walkable-neighbors current)
+                    :for neighbor :in neighbors
                     :when (= (distance neighbor) -1)
                       :do (setf (distance neighbor) (1+ (distance current)))
                           (enqueue neighbor queue)
-                          (unless (or (adjacent-junction-p neighbor)
-                                       (< (distance neighbor) (distance downstairs)))
+                          (unless (or (member :corridor (map-features neighbor))
+                                      (member :junction (map-features neighbor))
+                                      (adjacent-junction-p neighbor)
+                                      (< (distance neighbor) (distance downstairs)))
                             (setf downstairs neighbor))))
-    (setf (map-feature downstairs) :stairs-down)))
+    (pushnew :stairs-down (map-features downstairs))))
 
 (defun create-stairs ()
   (create-downstairs (create-upstairs)))

@@ -11,7 +11,7 @@
               :initarg :region-id)
    (adjacent-regions :accessor adjacent-regions
                      :initform nil)
-   (map-feature :accessor map-feature
+   (map-features :accessor map-features
                 :initform nil)
    (distance :accessor distance
              :initform -1)))
@@ -139,24 +139,24 @@ a filter. The default as defined by start and end parameters is all non-edge map
   (declare (ignore neighbors))
   (setf (walkablep tile) nil
         (region-id tile) nil
-        (map-feature tile) nil)
+        (map-features tile) nil)
   tile)
 
 (defun adjacent-junction-p (tile &optional neighbors)
   "Check if a tile has a junction adjacent to it."
   (declare (ignore neighbors))
   (with-slots (x y) tile
-    (or (eq (map-feature (tile x (1- y))) :junction)
-        (eq (map-feature (tile x (1+ y))) :junction)
-        (eq (map-feature (tile (1- x) y)) :junction)
-        (eq (map-feature (tile (1+ x) y)) :junction))))
+    (or (member :junction (map-features (tile x (1- y))))
+        (member :junction (map-features (tile x (1+ y))))
+        (member :junction (map-features (tile (1- x) y)))
+        (member :junction (map-features (tile (1+ x) y))))))
 
 (defun make-junction (tile)
   "Mark a tile as a junction between two regions if it has no adjacent junctions."
   (unless (adjacent-junction-p tile)
+    (pushnew :junction (map-features tile))
     (setf (walkablep tile) t
-          (region-id tile) nil
-          (map-feature tile) :junction)))
+          (region-id tile) nil)))
 
 (defun make-extra-junction (tile neighbors)
   "Check if a tile should become an extra junction, and mark it as such if so."

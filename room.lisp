@@ -54,9 +54,10 @@ minimum and maximum room sizes"
     (loop :with region-id = (make-region)
           :for x :from x1 :below x2
           :do (loop :for y :from y1 :below y2
-                   :for tile = (tile x y)
-                   :do (setf (walkablep tile) t
-                            (region-id tile) region-id)))
+                    :for tile = (tile x y)
+                    :do (setf (walkablep tile) t
+                              (region-id tile) region-id)
+                        (pushnew :room (map-features tile))))
     (push room (rooms *dungeon*))))
 
 (defun create-room ()
