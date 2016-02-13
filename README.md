@@ -22,8 +22,8 @@ The optional parameters are specified as keyword/values:
 
 * `:WINDINESS`: Specifies how windy corridors will be, as a range from `0.0` to `1.0`. This has minimal effect for densely packed rooms - see `:ROOM-DENSITY` below to control this. Default value is `0.0`.
 * `:ROOM-DENSITY`: Specifies how densely rooms should be packed in the dungeon, as a range from `0.1` (10%) to `1.0` (100%). Note: This is only an estimation. Default value is `0.65`.
-* `:ROOM-SIZE-MIN`: Specifies the minimum size in tiles the width or height of a room is allowed to be. Note: This should be supplied as an odd integer value, else it will be decremented by 1. Default value is `3`.
-* `:ROOM-SIZE-MAX`: Specifies the maximum size in tiles the width or height of a room is allowed to be. Note: This should be supplied as an odd integer value, else it will be decremented by 1. Default value is `11`.
+* `:ROOM-SIZE-MIN`: Specifies the minimum size in tiles the width or height of a room is allowed to be, within the range `3` to `99`. Note: This should be supplied as an odd integer value, else it will be decremented by 1. Default value is `3`.
+* `:ROOM-SIZE-MAX`: Specifies the maximum size in tiles the width or height of a room is allowed to be, within the range `ROOM-SIZE-MIN` to `101`. Note: This should be supplied as an odd integer value, else it will be decremented by 1. Default value is `11`.
 * `:JUNCTION-RATE`: Specifies the percentage of extra doors to generate between 2 regions, as a range from `0.0` to `1.0`. A value of `1.0` will place a junction in every possible tile location, causing many loops in the generated dungeon. Note: A value of `0.0` only affects extra junctions, and will therefor allow only 1 junction connecting a pair of regions. Default value is 0.03.
 
 All of the data you need to render a dungeon is located in the array `(tile-map *dungeon*)`.
@@ -57,8 +57,8 @@ Additionally, Sketch requires that you have SDL2 installed with your OS.
 
 The examples use the following colors for different tiles of the dungeon:
 
-* White: Walkable floor tiles
-* Dark gray: Un-walkable wall tiles
+* White: Walkable floor tiles.
+* Dark gray: Un-walkable wall tiles.
 * Blue: Junctions between two regions. A game can use these to make doors, etc.
 * Red: The start of the dungeon. A game can use this to place a staircase leading up, etc.
 * Green: The end of the dungeon. A game can use this to place a staircase leading down, etc.
