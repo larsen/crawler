@@ -33,7 +33,7 @@ This is an array of `Tile` instances, each having the following slots:
 * `X`: The X location in the map.
 * `Y`: The Y location in the map.
 * `WALKABLEP`: Predicate determining whether this tile is ground that can be walked upon.
-* `REGION-ID`: An integer representing the region. A region is a group of adjacent tiles. All rooms are of the same `REGION-ID`. Likewise, a corridor between two rooms (or more, in the case of branching) is of the same `REGION-ID`. You can think of a `REGION-ID` as belonging to a set of tiles as if it was flood-filled, stopping at junctions (what crawler calls doors or whatever your game may define them as).
+* `REGION-ID`: An integer representing the region. A region is a group of adjacent tiles. Each room's tiles are of the same `REGION-ID`. Likewise, a corridor between two rooms (or more, in the case of branching) is of the same `REGION-ID`. You can think of a `REGION-ID` as belonging to a set of tiles as if it was flood-filled, stopping at junctions (what crawler calls doors or whatever your game may define them as).
 * `ADJACENT-REGIONS`: A list of `REGION-ID`s specifying all the unique region's orthogonally adjacent to this tile.
 * `MAP-FEATURES`: A list of symbols identifying a special tile property, if any. Currently this can be one or more of the following:
  * `:JUNCTION`: The tile joins 2 unique regions.
