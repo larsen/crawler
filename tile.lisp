@@ -12,7 +12,7 @@
    (adjacent-regions :accessor adjacent-regions
                      :initform nil)
    (map-features :accessor map-features
-                :initform nil)
+                :initform '(:wall))
    (distance :accessor distance
              :initform -1)))
 
@@ -92,6 +92,19 @@ a filter. The default as defined by start and end parameters is all non-edge map
                   :when new
                     :do (push new tiles))))
 
+(defun add-feature (tile feature)
+  "Add a map feature to a tile."
+  (remove-feature tile :wall)
+  (pushnew feature (map-features tile)))
+
+(defun remove-feature (tile feature)
+  "Remove a map feature from a tile."
+  (deletef (map-features tile) feature))
+
+(defun featuresp (tile features)
+  "Check whether a tile has any of the given map features."
+  (some (lambda (x) (member x features)) (map-features tile)))
+
 (defun carvablep (tile neighbors)
   "Check if a tile and all of its neighbors are unwalkable."
   (with-slots (n s e w nw ne se sw) neighbors
@@ -137,26 +150,31 @@ a filter. The default as defined by start and end parameters is all non-edge map
 (defun make-wall (tile neighbors)
   "Mark a tile as a wall."
   (declare (ignore neighbors))
-  (setf (walkablep tile) nil
-        (region-id tile) nil
-        (map-features tile) nil)
+  (with-slots (walkablep region-id map-features) tile
+    (setf walkablep nil
+          region-id nil
+          map-features '(:wall)))
   tile)
 
-(defun adjacent-junction-p (tile &optional neighbors)
+(defun junctionp (tile)
+  "Check whether or not the given tile is a junction between two unique regions."
+  (featuresp tile '(:junction)))
+
+(defun adjacent-junction-p (tile)
   "Check if a tile has a junction adjacent to it."
-  (declare (ignore neighbors))
   (with-slots (x y) tile
-    (or (member :junction (map-features (tile x (1- y))))
-        (member :junction (map-features (tile x (1+ y))))
-        (member :junction (map-features (tile (1- x) y)))
-        (member :junction (map-features (tile (1+ x) y))))))
+    (or (junctionp (tile x (1- y)))
+        (junctionp (tile x (1+ y)))
+        (junctionp (tile (1- x) y))
+        (junctionp (tile (1+ x) y)))))
 
 (defun make-junction (tile)
   "Mark a tile as a junction between two regions if it has no adjacent junctions."
   (unless (adjacent-junction-p tile)
-    (pushnew :junction (map-features tile))
-    (setf (walkablep tile) t
-          (region-id tile) nil)))
+    (with-slots (walkablep region-id) tile
+      (add-feature tile :junction)
+      (setf walkablep t
+            region-id nil))))
 
 (defun make-extra-junction (tile neighbors)
   "Check if a tile should become an extra junction, and mark it as such if so."

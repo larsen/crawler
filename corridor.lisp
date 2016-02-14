@@ -14,6 +14,10 @@
       (rng 'elt :list cells)
       (first (last cells))))
 
+(defun corridorp (tile)
+  "Check whether or not the given tile is in a corridor."
+  (member :corridor (map-features tile)))
+
 (defun neighbors (x y)
   "Get all offset coordinates representing a neighbor of the specified coordinates."
   (with-slots (width height) *dungeon*
@@ -38,7 +42,7 @@
             :for tile = (get-cell cell dir i t)
             :do (setf (walkablep tile) t
                       (region-id tile) (current-region *dungeon*))
-                (pushnew :corridor (map-features tile))
+                (add-feature tile :corridor)
             :finally (appendf cells new-cell))))
   cells)
 

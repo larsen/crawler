@@ -57,7 +57,7 @@ minimum and maximum room sizes"
                     :for tile = (tile x y)
                     :do (setf (walkablep tile) t
                               (region-id tile) region-id)
-                        (pushnew :room (map-features tile))))
+                        (add-feature tile :room)))
     (push room (rooms *dungeon*))))
 
 (defun create-room ()
@@ -76,3 +76,7 @@ minimum and maximum room sizes"
                        (<= (y1 new-room) (y2 room))
                        (>= (y2 new-room) (y1 room)))
               (return room))))
+
+(defun roomp (tile)
+  "Check whether or not a given tile is in a room."
+  (member :room (map-features tile)))
