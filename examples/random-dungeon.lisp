@@ -1,8 +1,10 @@
 (in-package :crawler-examples)
 
+(defvar *tile-size* 10)
+
 (defsketch random-dungeon (:title "Dungeon"
-                           :width (* 10 (width *dungeon*))
-                           :height (* 10 (height *dungeon*))
+                           :width (* *tile-size* (width *dungeon*))
+                           :height (* *tile-size* (height *dungeon*))
                            :debug :scancode-grave)
     ()
   (with-slots (width height) *dungeon*
@@ -28,7 +30,10 @@
 
 (defmethod draw-tile (x y)
   (with-pen (make-pen :fill (select-color x y))
-    (rect (* x 10) (* y 10) 9 9)))
+    (rect (* x *tile-size*)
+          (* y *tile-size*)
+          (1- *tile-size*)
+          (1- *tile-size*))))
 
 (defmethod mousebutton-event ((window random-dungeon) state ts button x y)
   (with-slots (width height) *dungeon*

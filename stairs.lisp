@@ -41,6 +41,7 @@
                :end `(,(- x2 width) ,(- y2 height)))))))
 
 (defun downstairs-choices (region)
+  "Get a list of tiles in the given region where an exit staircase can be placed."
   (mapcar #'first
           (collect-tiles
            (lambda (tile neighbors)
@@ -49,14 +50,8 @@
                   (= (region-id tile) region)))
            #'identity)))
 
-(defun pick-upstairs ()
-  "Create the entrance staircase."
-  (let ((tile (rng 'elt :list (upstairs-choices))))
-    (add-feature tile :stairs-up)
-    (setf (distance tile) 0)
-    tile))
-
 (defun pick-downstairs (region)
+  "Create the exit staircase."
   (let ((tile (rng 'elt :list (downstairs-choices region))))
     (add-feature tile :stairs-down)
     tile))
@@ -64,7 +59,7 @@
 (defun create-upstairs ()
   "Create the entrance staircase."
   (let ((tile (rng 'elt :list (upstairs-choices))))
-    (pushnew :stairs-up (map-features tile))
+    (add-feature tile :stairs-up)
     (setf (distance tile) 0)
     tile))
 
