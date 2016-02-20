@@ -16,11 +16,6 @@
    (tile-map :accessor tile-map
              :initarg :tile-map)))
 
-(defun set-attrs (attrs)
-  "Set the specified generator attributes."
-  (loop :for (attr . value) :in (plist-alist attrs)
-        :do (setf (attr :dungeon attr) value)))
-
 (defun make-tile-map (w h)
   (setf *dungeon* (make-instance 'dungeon :w w :h h))
   (with-slots (width height tile-map) *dungeon*
@@ -35,8 +30,7 @@
 (defun make-dungeon (w h &rest attrs)
   "Top-level dungeon creator."
   (load-prototypes '("dungeon"))
-  (make-generator)
-  (set-attrs attrs)
+  (make-generator attrs)
   (make-tile-map w h)
   (generate-dungeon))
 
@@ -56,7 +50,7 @@
   (with-slots (width height) *dungeon*
     (loop :for x :below width
           do (loop :for y :below height
-                   :do (setf (tile x y) (make-tile x y))))))
+                   :do (setf (tile x y) (make-instance 'tile :x x :y y))))))
 
 (defun create-rooms ()
   "Create rooms until the desired density is reached."

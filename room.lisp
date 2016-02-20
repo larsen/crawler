@@ -41,13 +41,6 @@ minimum and maximum room sizes"
           (generate-room-size)
           (values w h)))))
 
-(defun generate-room-location (width height)
-  "Generate a random location in the dungeon for a room."
-  (let ((x (rng 'range-int :max (- (width *dungeon*) width 1)))
-        (y (rng 'range-int :max (- (height *dungeon*) height 1))))
-    (values (if (evenp x) (incf x) x)
-            (if (evenp y) (incf y) y))))
-
 (defun add-to-dungeon (room)
   "Add the given room to the dungeon."
   (with-slots (x1 x2 y1 y2) room
@@ -63,8 +56,10 @@ minimum and maximum room sizes"
 (defun create-room ()
   "Create a room with a random size and location, placing it in the dungeon."
   (multiple-value-bind (w h) (generate-room-size)
-    (multiple-value-bind (x y) (generate-room-location w h)
-      (let ((room (make-instance 'dungeon-room :x1 x :y1 y :w w :h h)))
+    (with-slots (width height) *dungeon*
+      (let* ((x (rng 'range-odd :max (- width w)))
+             (y (rng 'range-odd :max (- height h)))
+             (room (make-instance 'dungeon-room :x1 x :y1 y :w w :h h)))
         (unless (intersectsp room)
           (add-to-dungeon room))))))
 
@@ -79,4 +74,4 @@ minimum and maximum room sizes"
 
 (defun roomp (tile)
   "Check whether or not a given tile is in a room."
-  (member :room (map-features tile)))
+  (featuresp tile '(:room)))

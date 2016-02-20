@@ -6,9 +6,11 @@
    (y :reader y
       :initarg :y)
    (walkablep :accessor walkablep
-              :initarg :walkablep)
+              :initarg :walkablep
+              :initform nil)
    (region-id :accessor region-id
-              :initarg :region-id)
+              :initarg :region-id
+              :initform nil)
    (adjacent-regions :accessor adjacent-regions
                      :initform nil)
    (map-features :accessor map-features
@@ -19,10 +21,6 @@
 (defstruct (neighbor-data
             (:conc-name nil))
   n s e w nw ne se sw)
-
-(defun make-tile (x y &key walkablep region-id)
-  "Make a tile instance."
-  (make-instance 'tile :x x :y y :walkablep walkablep :region-id region-id))
 
 (defun tile (x y)
   "Get a tile instance with the specified coordinates from the tile map array."

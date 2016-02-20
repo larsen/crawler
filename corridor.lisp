@@ -16,7 +16,7 @@
 
 (defun corridorp (tile)
   "Check whether or not the given tile is in a corridor."
-  (member :corridor (map-features tile)))
+  (featuresp tile '(:corridor)))
 
 (defun neighbors (x y)
   "Get all offset coordinates representing a neighbor of the specified coordinates."
