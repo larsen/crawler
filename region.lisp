@@ -45,15 +45,3 @@
       (setf (adjacent-regions tile)
             (substitute to from (adjacent-regions tile)))
       (push tile (connectors to-region)))))
-
-(defun create-junctions ()
-  "Join all regions by carving some connectors into junctions."
-  (with-slots (regions) *dungeon*
-    (loop :with region-id = (rng 'elt :list (hash-table-keys regions))
-          :while (connectors (gethash region-id regions))
-          :for connector = (random-connector region-id)
-          :for connected = (get-connected-region region-id connector)
-          :do (make-junction connector)
-              (remove-extra-connectors region-id connected)
-              (move-connectors connected region-id))
-    (map-tiles #'connectorp #'region-id #'make-extra-junction)))

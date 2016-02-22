@@ -9,4 +9,6 @@
   :serial t
   :pathname "examples"
   :components ((:file "package")
-               (:file "random-dungeon")))
+               (:file "example")
+               (:file "example-mine")
+               (:file "example-cave")))

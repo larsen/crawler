@@ -16,4 +16,6 @@
                (:file "corridor")
                (:file "region")
                (:file "stairs")
+               (:file "dungeon-mine")
+               (:file "dungeon-cave")
                (:file "dungeon")))

@@ -79,7 +79,3 @@
                                      (> (distance tile) (distance goal)))
                             (setf goal tile))))
     (pick-downstairs (region-id goal))))
-
-(defun create-stairs ()
-  "Create the entrance and exit staircases."
-  (create-downstairs (create-upstairs)))

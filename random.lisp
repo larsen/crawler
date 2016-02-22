@@ -9,10 +9,10 @@
              (get-internal-real-time))))
    (expt 2 48)))
 
-(defun make-generator (attrs)
+(defun make-generator (type attrs)
   (setf (random-seed *random-generator*) (make-seed))
   (loop :for (attr . value) :in (plist-alist attrs)
-        :do (setf (attr :dungeon attr) value)))
+        :do (setf (attr type attr) value)))
 
 (defgeneric rng (type &key))
 

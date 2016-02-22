@@ -177,5 +177,5 @@ a filter. The default as defined by start and end parameters is all non-edge map
 (defun make-extra-junction (tile neighbors)
   "Check if a tile should become an extra junction, and mark it as such if so."
   (declare (ignore neighbors))
-  (when (< (rng 'range-inc) (clamp (attr :dungeon :junction-rate) 0 1))
+  (when (< (rng 'range-inc) (clamp (attr :mine :junction-rate) 0 1))
     (make-junction tile)))

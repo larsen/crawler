@@ -6,13 +6,12 @@
         #:crawler)
   (:import-from #:sketch
                 #:defsketch
-                #:define-sketch-setup
                 #:rect
                 #:with-pen
                 #:make-pen
                 #:gray
                 #:rgb
                 #:background)
-  (:export #:random-dungeon))
+  (:export #:run))
 
 (in-package :crawler-examples)

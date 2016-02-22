@@ -23,7 +23,7 @@
   "Calculate an estimated number of rooms to generate for the specified density, based on the
 minimum and maximum room sizes"
   (with-slots (width height) *dungeon*
-    (with-attrs (room-size-min room-size-max) :dungeon
+    (with-attrs (room-size-min room-size-max) :mine
       (setf room-size-min (clamp room-size-min 3 99)
             room-size-max (clamp room-size-max (+ room-size-min 2) 101))
       (let* ((smallest-area (* (expt room-size-min 2)))
@@ -34,7 +34,7 @@ minimum and maximum room sizes"
 
 (defun generate-room-size ()
   "Generate a random room size within the minimum and maximum sizes."
-  (with-attrs (room-size-min room-size-max) :dungeon
+  (with-attrs (room-size-min room-size-max) :mine
     (let ((w (rng 'range-odd :min room-size-min :max room-size-max))
           (h (rng 'range-odd :min room-size-min :max room-size-max)))
       (if (< (/ (min w h) (max w h)) (rng 'range-inc))

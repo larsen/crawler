@@ -1,8 +1,8 @@
 (in-package :crawler)
 
-(defvar *prototypes* nil)
+(defvar *data* nil)
 
-(defclass prototype ()
+(defclass data ()
   ((id :reader id
        :initarg :id)
    (attrs :accessor attrs
@@ -12,31 +12,26 @@
                :initarg :components
                :initform nil)))
 
-(defun prototype (id)
-  "Retrieve a prototype by its ID from the manager."
-  (gethash id *prototypes*))
+(defun data (id)
+  "Retrieve data by its ID from the manager."
+  (gethash id *data*))
 
-(defun (setf prototype) (prototype id)
-  "Store a prototype with a reference of ID in the manager."
-  (setf (gethash id *prototypes*) prototype))
+(defun (setf data) (data id)
+  "Store data with a reference of ID in the manager."
+  (setf (gethash id *data*) data))
 
-(defun add-prototypes (file)
-  "Read the prototype definition file and store each prototype in the manager."
-  (loop :for (id . (attrs components)) :in (read-file file)
-        :do (setf (prototype id) (make-prototype id attrs components))))
+(defun load-data ()
+  "Read a data file and store each item in the manager."
+  (setf *data* (make-hash-table))
+  (loop :with file = (get-path "data" "dungeon.lisp")
+        :for (id . (attrs components)) :in (read-file file)
+        :do (setf (data id) (make-data id attrs components))))
 
-(defun load-prototypes (files)
-  "Load the base prototypes and all the given prototypes."
-  (setf *prototypes* (make-hash-table))
-  (loop :for file :in files
-        :for path = (get-path "proto" (format nil "~(~A~).proto" file))
-        :do (add-prototypes path)))
-
-(defun make-prototype (id attrs components)
-  (let ((prototype (make-instance 'prototype :id id :components components)))
-    (copy-components prototype)
-    (add-attrs prototype attrs)
-    prototype))
+(defun make-data (id attrs components)
+  (let ((data (make-instance 'data :id id :components components)))
+    (copy-components data)
+    (add-attrs data attrs)
+    data))
 
 (defun add-attrs (to attrs)
   (loop :for (name . attr) :in attrs
@@ -47,39 +42,40 @@
 
 (defun copy-components (to &key from)
   (loop :for id :in (components (or from to))
-        :for component = (prototype id)
+        :for component = (data id)
         :unless (member id (components to))
           :do (push id (components to))
         :when component
           :do (copy-components to :from component)
               (add-attrs to (attrs component))))
 
-(defmethod attrs-plist (prototype)
-  (loop :for (attr . value) :in (slot-value (prototype prototype) 'attrs)
+(defmethod attrs-plist (data)
+  (loop :for (attr . value) :in (slot-value (data data) 'attrs)
         :collect (make-keyword attr)
         :collect value))
 
-(defmethod attr (prototype name)
-  (when-let ((prototype (prototype prototype)))
-    (attr prototype name)))
+(defmethod attr (data name)
+  (when-let ((data (data data)))
+    (attr data name)))
 
-(defmethod attr ((prototype prototype) name)
-  (with-slots (attrs) prototype
+(defmethod attr ((data data) name)
+  (with-slots (attrs) data
     (cdr (assoc name attrs))))
 
-(defmethod (setf attr) (value prototype name)
-  (when-let ((prototype (prototype prototype)))
-    (setf (attr prototype name) value)))
+(defmethod (setf attr) (value data name)
+  (when-let ((data (data data)))
+    (setf (attr data name) value)))
 
-(defmethod (setf attr) (value (prototype prototype) name)
-  (with-slots (attrs) prototype
+(defmethod (setf attr) (value (data data) name)
+  (with-slots (attrs) data
     (if-let ((cell (assoc name attrs)))
       (setf (cdr cell) value)
       (progn
         (push (cons name value) attrs)
         value))))
 
-(defmacro with-attrs (attrs prototype &body body)
-  `(symbol-macrolet (,@(loop :for attr :in attrs
-                             :collect (list attr `(attr ,prototype ,(make-keyword attr)))))
+(defmacro with-attrs (attrs data &body body)
+  `(symbol-macrolet
+       (,@(loop :for attr :in attrs
+                :collect (list attr `(attr ,data ,(make-keyword attr)))))
      ,@body))
