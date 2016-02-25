@@ -22,22 +22,32 @@
             (:conc-name nil))
   n s e w nw ne se sw)
 
-(defun tile (x y)
-  "Get a tile instance with the specified coordinates from the tile map array."
-  (aref (tile-map *dungeon*) x y))
+(defun tilep (tile &optional neighbors)
+  (declare (ignore neighbors))
+  (typep tile 'tile))
 
-(defun (setf tile) (tile x y)
-  "Add a tile instance with the specified coordinates to the tile map array."
-  (setf (aref (tile-map *dungeon*) x y) tile))
+(defun tile (x y &key buffer)
+  (with-slots (tiles) *dungeon*
+    (aref tiles x y (or buffer (current-buffer)))))
 
-(defun tile-count ()
-  "Get the number of tiles in the dungeon."
+(defun (setf tile) (tile x y &key buffer)
+  (with-slots (tiles) *dungeon*
+    (setf (aref tiles x y (or buffer (next-buffer))) tile)))
+
+(defun tile-count (&key (percent 1) (perimeterp t))
   (with-slots (width height) *dungeon*
-    (* width height)))
+    (let ((i (if perimeterp 0 2)))
+      (round (* (- width i) (- height i) percent)))))
+
+(defun random-tile (&key (perimeterp t))
+  (with-slots (width height) *dungeon*
+    (let* ((min (if perimeterp 0 1))
+           (max (if perimeterp 1 2))
+           (x (rng 'range-int :min min :max (- width max)))
+           (y (rng 'range-int :min min :max (- height max))))
+      (tile x y))))
 
 (defun get-neighbors (tile func)
-  "Create a structure containing data for all of a tile's neighbors that are within a specified
-area."
   (with-slots (x y) tile
     (make-neighbor-data
      :n (funcall func (tile x (1- y)))
@@ -50,14 +60,11 @@ area."
      :sw (funcall func (tile (1- x) (1+ y))))))
 
 (defun walkable-neighbors (tile)
-  "Get a list of tile neighbors that are walkable."
   (let ((neighbors (get-neighbors tile #'identity)))
     (with-slots (n s e w) neighbors
       (remove-if (lambda (x) (not (walkablep x))) (list n s e w)))))
 
 (defun map-tiles (filter func effect &key (start '(1 1)) (end '(-1 -1)))
-  "Loop over all tiles within a specified area, calling an effect for each tile that passes through
-a filter. The default as defined by start and end parameters is all non-edge map tiles."
   (with-slots (width height) *dungeon*
     (loop :with map-affected-p
           :for x :from (first start) :below (+ width (first end))
@@ -70,7 +77,6 @@ a filter. The default as defined by start and end parameters is all non-edge map
           :finally (return map-affected-p))))
 
 (defun collect-tiles (filter func &key (start '(1 1)) (end '(-1 -1)))
-  "Collect a list of filtered map tiles."
   (let ((tiles))
     (map-tiles
      filter
@@ -81,7 +87,6 @@ a filter. The default as defined by start and end parameters is all non-edge map
     tiles))
 
 (defun process-tiles (filter func processor)
-  "Run a processor on a list of filtered map tiles."
   (loop :with tiles = (collect-tiles filter func)
         :while tiles
         :do (loop :with (tile neighbors) = (pop tiles)
@@ -90,40 +95,41 @@ a filter. The default as defined by start and end parameters is all non-edge map
                   :when new
                     :do (push new tiles))))
 
+(defun floorp (tile &optional neighbors)
+  (declare (ignore neighbors))
+  (featuresp tile '(:floor)))
+
+(defun wallp (tile &optional neighbors)
+  (declare (ignore neighbors))
+  (featuresp tile '(:wall)))
+
 (defun add-feature (tile feature)
-  "Add a map feature to a tile."
   (remove-feature tile :wall)
   (pushnew feature (map-features tile)))
 
 (defun remove-feature (tile feature)
-  "Remove a map feature from a tile."
   (deletef (map-features tile) feature))
 
 (defun featuresp (tile features)
-  "Check whether a tile has any of the given map features."
   (some (lambda (x) (member x features)) (map-features tile)))
 
 (defun carvablep (tile neighbors)
-  "Check if a tile and all of its neighbors are unwalkable."
   (with-slots (n s e w nw ne se sw) neighbors
     (every #'null (list (walkablep tile) n s e w nw ne se sw))))
 
 (defun connectorp (tile neighbors)
-  "Check if a tile can connect two different regions."
   (with-slots (n s e w) neighbors
     (and (not (region-id tile))
          (or (and (not (eql n s)) n s)
              (and (not (eql e w)) e w)))))
 
 (defun dead-end-p (tile neighbors)
-  "Check if a tile is surrounded by three or more unwalkable tiles."
   (with-slots (n s e w) neighbors
     (let ((dirs (remove-if #'identity (list n s e w))))
       (and (walkablep tile)
            (>= (length dirs) 3)))))
 
 (defun erode-dead-end (tile neighbors)
-  "Remove a dead-end tile, and return the next dead-end adjacent to it."
   (make-wall tile neighbors)
   (with-slots (x y) tile
     (with-slots (n s e w) neighbors
@@ -139,14 +145,12 @@ a filter. The default as defined by start and end parameters is all non-edge map
               (list next-tile next-neighbors))))))))
 
 (defun make-connector (tile neighbors)
-  "Mark a tile as a connector between two regions."
   (with-slots (n s e w) neighbors
     (setf (adjacent-regions tile) (remove nil (list n s e w)))
     (dolist (region-id (adjacent-regions tile))
       (push tile (connectors (get-region region-id))))))
 
-(defun make-wall (tile neighbors)
-  "Mark a tile as a wall."
+(defun make-wall (tile &optional neighbors)
   (declare (ignore neighbors))
   (with-slots (walkablep region-id map-features) tile
     (setf walkablep nil
@@ -154,12 +158,17 @@ a filter. The default as defined by start and end parameters is all non-edge map
           map-features '(:wall)))
   tile)
 
+(defun make-floor (tile &optional neighbors)
+  (declare (ignore neighbors))
+  (with-slots (walkablep) tile
+    (setf walkablep t)
+    (remove-feature tile :wall)
+    (add-feature tile :floor)))
+
 (defun junctionp (tile)
-  "Check whether or not the given tile is a junction between two unique regions."
   (featuresp tile '(:junction)))
 
 (defun adjacent-junction-p (tile)
-  "Check if a tile has a junction adjacent to it."
   (with-slots (x y) tile
     (or (junctionp (tile x (1- y)))
         (junctionp (tile x (1+ y)))
@@ -167,15 +176,13 @@ a filter. The default as defined by start and end parameters is all non-edge map
         (junctionp (tile (1+ x) y)))))
 
 (defun make-junction (tile)
-  "Mark a tile as a junction between two regions if it has no adjacent junctions."
   (unless (adjacent-junction-p tile)
-    (with-slots (walkablep region-id) tile
+    (with-slots (region-id) tile
       (add-feature tile :junction)
-      (setf walkablep t
-            region-id nil))))
+      (make-floor tile)
+      (setf region-id nil))))
 
 (defun make-extra-junction (tile neighbors)
-  "Check if a tile should become an extra junction, and mark it as such if so."
   (declare (ignore neighbors))
   (when (< (rng 'range-inc) (clamp (attr :mine :junction-rate) 0 1))
     (make-junction tile)))

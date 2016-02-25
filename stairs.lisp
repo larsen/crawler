@@ -5,11 +5,9 @@
   (tail))
 
 (defun queue-empty-p (queue)
-  "Check if a queue is empty."
   (endp (queue-items queue)))
 
 (defun enqueue (item queue)
-  "Enqueue an item to a queue."
   (if (queue-empty-p queue)
       (setf (queue-items queue) (list item)
             (queue-tail queue) (queue-items queue))
@@ -18,19 +16,16 @@
   queue)
 
 (defun dequeue (queue)
-  "Dequeue an item from a queue."
   (unless (queue-empty-p queue)
     (pop (queue-items queue))))
 
 (defun staircase-suitable-p (tile &optional neighbors)
-  "Check if a tile is allowed to become a staircase."
   (declare (ignore neighbors))
   (and (roomp tile)
        (not (junctionp tile))
        (not (adjacent-junction-p tile))))
 
 (defun upstairs-choices ()
-  "Get a list of tiles in a random room where an entrance staircase can be placed."
   (with-slots (width height rooms) *dungeon*
     (with-slots (x1 y1 x2 y2) (rng 'elt :list rooms)
       (mapcar #'first
@@ -41,7 +36,6 @@
                :end `(,(- x2 width) ,(- y2 height)))))))
 
 (defun downstairs-choices (region)
-  "Get a list of tiles in the given region where an exit staircase can be placed."
   (mapcar #'first
           (collect-tiles
            (lambda (tile neighbors)
@@ -51,20 +45,17 @@
            #'identity)))
 
 (defun pick-downstairs (region)
-  "Create the exit staircase."
   (let ((tile (rng 'elt :list (downstairs-choices region))))
     (add-feature tile :stairs-down)
     tile))
 
 (defun create-upstairs ()
-  "Create the entrance staircase."
   (let ((tile (rng 'elt :list (upstairs-choices))))
     (add-feature tile :stairs-up)
     (setf (distance tile) 0)
     tile))
 
 (defun create-downstairs (source)
-  "Create the exit staircase."
   (let ((queue (make-queue))
         (goal source))
     (enqueue source queue)

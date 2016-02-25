@@ -7,27 +7,31 @@
           :initarg :w)
    (height :reader height
            :initarg :h)
-   (tile-map :accessor tile-map
-             :initarg :tile-map)))
+   (buffers :accessor buffers
+            :initform (list 0))
+   (tiles :accessor tiles
+          :initarg :tiles)))
 
-(defun create-walls ()
-  "Fill the dungeon with all wall tiles."
+(defmethod create-walls :around (&key)
+  (dolist (i (buffers *dungeon*))
+    (call-next-method :buffer i)))
+
+(defmethod create-walls (&key buffer)
   (with-slots (width height) *dungeon*
     (loop :for x :below width
           do (loop :for y :below height
-                   :do (setf (tile x y) (make-instance 'tile :x x :y y))))))
-
-(defmethod make-tile-map :around (type)
-  (with-slots (width height tile-map) *dungeon*
-    (call-next-method)
-    (setf tile-map (make-array `(,width ,height) :initial-element (make-instance 'tile)))))
+                   :do (setf (tile x y :buffer buffer) (make-instance 'tile :x x :y y))))))
 
 (defgeneric build (type))
+
+(defmethod build :around (type)
+  (create-walls)
+  (call-next-method))
 
 (defun make-dungeon (type width height &rest attrs)
   (setf *dungeon* (make-instance (intern (string type) :crawler) :w width :h height))
   (load-data)
   (make-generator type attrs)
-  (make-tile-map type)
+  (make-buffers type)
   (build type)
   *dungeon*)

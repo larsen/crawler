@@ -10,7 +10,7 @@
            #:height
            #:attrs-plist
            #:tile
-           #:tile-map
+           #:tiles
            #:tile-size
            #:walkablep
            #:region-id

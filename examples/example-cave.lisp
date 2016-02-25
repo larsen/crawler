@@ -9,7 +9,7 @@
   (with-slots (width height) *dungeon*
     (dotimes (x width)
       (dotimes (y height)
-        (draw-tile :mine x y)))))
+        (draw-tile :cave x y)))))
 
 (defmethod select-color ((type (eql :cave)) x y)
   (let ((tile (tile x y)))

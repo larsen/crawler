@@ -29,3 +29,6 @@
   (when (evenp min) (decf min))
   (let ((num (rng 'range-inc :min min :max max)))
     (if (evenp num) (decf num) num)))
+
+(defmethod rng ((type (eql 'boolean)) &key (probability 0.5))
+  (random-boolean *random-generator* probability))

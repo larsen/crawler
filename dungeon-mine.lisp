@@ -8,7 +8,7 @@
    (current-region :accessor current-region
                    :initform 0)))
 
-(defmethod make-tile-map ((type (eql :mine)))
+(defmethod make-buffers ((type (eql :mine)))
   (with-slots (width height) *dungeon*
     (with-attrs (room-size-max) :mine
       (let ((min-size (* room-size-max 2)))
@@ -18,7 +18,6 @@
         (when (evenp height) (incf height))))))
 
 (defun create-rooms ()
-  "Create rooms until the desired density is reached."
   (loop :with max-rooms = (calculate-room-count (attr :mine :room-density))
         :with tries = 0
         :until (or (= (length (rooms *dungeon*)) max-rooms)
@@ -27,7 +26,6 @@
             (incf tries)))
 
 (defun create-junctions ()
-  "Join all regions by carving some connectors into junctions."
   (with-slots (regions) *dungeon*
     (loop :with region-id = (rng 'elt :list (hash-table-keys regions))
           :while (connectors (gethash region-id regions))
@@ -39,8 +37,6 @@
     (map-tiles #'connectorp #'region-id #'make-extra-junction)))
 
 (defmethod build ((type (eql :mine)))
-  "Generate all parts of the dungeon."
-  (create-walls)
   (create-rooms)
   (map-tiles #'carvablep #'walkablep #'carve)
   (map-tiles #'connectorp #'region-id #'make-connector)

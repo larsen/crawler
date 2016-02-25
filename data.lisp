@@ -13,15 +13,12 @@
                :initform nil)))
 
 (defun data (id)
-  "Retrieve data by its ID from the manager."
   (gethash id *data*))
 
 (defun (setf data) (data id)
-  "Store data with a reference of ID in the manager."
   (setf (gethash id *data*) data))
 
 (defun load-data ()
-  "Read a data file and store each item in the manager."
   (setf *data* (make-hash-table))
   (loop :with file = (get-path "data" "dungeon.lisp")
         :for (id . (attrs components)) :in (read-file file)

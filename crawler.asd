@@ -11,6 +11,7 @@
                (:file "random")
                (:file "util")
                (:file "data")
+               (:file "buffer")
                (:file "tile")
                (:file "room")
                (:file "corridor")
