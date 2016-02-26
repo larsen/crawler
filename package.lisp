@@ -6,8 +6,8 @@
         #:cl-variates)
   (:export #:make-dungeon
            #:*dungeon*
-           #:width
-           #:height
+           #:attr
+           #:with-attrs
            #:attrs-plist
            #:tile
            #:tiles

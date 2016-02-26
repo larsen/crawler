@@ -1,15 +1,11 @@
 (in-package :crawler-examples)
 
 (defsketch :mine (:title "Example Mine"
-                  :width (* *tile-size* (width *dungeon*))
-                  :height (* *tile-size* (height *dungeon*))
+                  :width (* *tile-size* (attr :dungeon :width))
+                  :height (* *tile-size* (attr :dungeon :height))
                   :debug :scancode-grave)
     ()
-  (background (gray 0.2))
-  (with-slots (width height) *dungeon*
-    (dotimes (x width)
-      (dotimes (y height)
-        (draw-tile :mine x y)))))
+  (render :mine))
 
 (defmethod select-color ((type (eql :mine)) x y)
   (let ((tile (tile x y)))
@@ -23,8 +19,9 @@
       ((walkablep tile)
        (gray 1)))))
 
-(defmethod regenerate ((window :mine) &key width height)
-  (apply #'make-dungeon :mine width height (attrs-plist :mine)))
+(defmethod regenerate ((window :mine))
+  (apply #'make-dungeon :mine (append (attrs-plist :mine)
+                                      (attrs-plist :dungeon))))
 
-(defmethod run ((type (eql :mine)) width height &key)
+(defmethod run ((type (eql :mine)) &key)
   (make-instance :mine))

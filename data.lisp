@@ -7,10 +7,7 @@
        :initarg :id)
    (attrs :accessor attrs
           :initarg :attrs
-          :initform nil)
-   (components :accessor components
-               :initarg :components
-               :initform nil)))
+          :initform nil)))
 
 (defun data (id)
   (gethash id *data*))
@@ -21,30 +18,14 @@
 (defun load-data ()
   (setf *data* (make-hash-table))
   (loop :with file = (get-path "data" "dungeon.lisp")
-        :for (id . (attrs components)) :in (read-file file)
-        :do (setf (data id) (make-data id attrs components))))
+        :for (id . (attrs)) :in (read-file file)
+        :do (setf (data id) (make-data id attrs))))
 
-(defun make-data (id attrs components)
-  (let ((data (make-instance 'data :id id :components components)))
-    (copy-components data)
-    (add-attrs data attrs)
+(defun make-data (id attrs)
+  (let ((data (make-instance 'data :id id)))
+    (loop :for (name . attr) :in attrs
+          :do (setf (attr data name) attr))
     data))
-
-(defun add-attrs (to attrs)
-  (loop :for (name . attr) :in attrs
-        :for value = (if (typep attr 'sequence)
-                         (copy-seq attr)
-                         attr)
-        :do (setf (attr to name) value)))
-
-(defun copy-components (to &key from)
-  (loop :for id :in (components (or from to))
-        :for component = (data id)
-        :unless (member id (components to))
-          :do (push id (components to))
-        :when component
-          :do (copy-components to :from component)
-              (add-attrs to (attrs component))))
 
 (defmethod attrs-plist (data)
   (loop :for (attr . value) :in (slot-value (data data) 'attrs)

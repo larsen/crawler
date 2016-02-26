@@ -1,15 +1,11 @@
 (in-package :crawler-examples)
 
 (defsketch :cave (:title "Example Cave"
-                  :width (* *tile-size* (width *dungeon*))
-                  :height (* *tile-size* (height *dungeon*))
+                  :width (* *tile-size* (attr :dungeon :width))
+                  :height (* *tile-size* (attr :dungeon :height))
                   :debug :scancode-grave)
     ()
-  (background (gray 0.2))
-  (with-slots (width height) *dungeon*
-    (dotimes (x width)
-      (dotimes (y height)
-        (draw-tile :cave x y)))))
+  (render :cave))
 
 (defmethod select-color ((type (eql :cave)) x y)
   (let ((tile (tile x y)))
@@ -17,8 +13,9 @@
       ((walkablep tile)
        (gray 1)))))
 
-(defmethod regenerate ((window :cave) &key width height)
-  (apply #'make-dungeon :cave width height (attrs-plist :cave)))
+(defmethod regenerate ((window :cave))
+  (apply #'make-dungeon :cave (append (attrs-plist :cave)
+                                      (attrs-plist :dungeon))))
 
-(defmethod run ((type (eql :cave)) width height &key)
+(defmethod run ((type (eql :cave)) &key)
   (make-instance :cave))

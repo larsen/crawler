@@ -16,7 +16,7 @@
   (featuresp tile '(:corridor)))
 
 (defun neighbors (x y)
-  (with-slots (width height) *dungeon*
+  (with-attrs (width height) :dungeon
     (remove-if
      (lambda (dir)
        (or (< (+ x (first dir)) 1)

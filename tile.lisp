@@ -22,9 +22,8 @@
             (:conc-name nil))
   n s e w nw ne se sw)
 
-(defun tilep (tile &optional neighbors)
-  (declare (ignore neighbors))
-  (typep tile 'tile))
+(defun make-tile (x y buffer)
+  (setf (tile x y :buffer buffer) (make-instance 'tile :x x :y y)))
 
 (defun tile (x y &key buffer)
   (with-slots (tiles) *dungeon*
@@ -35,12 +34,12 @@
     (setf (aref tiles x y (or buffer (next-buffer))) tile)))
 
 (defun tile-count (&key (percent 1) (perimeterp t))
-  (with-slots (width height) *dungeon*
+  (with-attrs (width height) :dungeon
     (let ((i (if perimeterp 0 2)))
       (round (* (- width i) (- height i) percent)))))
 
 (defun random-tile (&key (perimeterp t))
-  (with-slots (width height) *dungeon*
+  (with-attrs (width height) :dungeon
     (let* ((min (if perimeterp 0 1))
            (max (if perimeterp 1 2))
            (x (rng 'range-int :min min :max (- width max)))
@@ -65,7 +64,7 @@
       (remove-if (lambda (x) (not (walkablep x))) (list n s e w)))))
 
 (defun map-tiles (filter func effect &key (start '(1 1)) (end '(-1 -1)))
-  (with-slots (width height) *dungeon*
+  (with-attrs (width height) :dungeon
     (loop :with map-affected-p
           :for x :from (first start) :below (+ width (first end))
           :do (loop :for y :from (second start) :below (+ height (second end))

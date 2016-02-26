@@ -20,7 +20,7 @@
           y2 (+ y1 height))))
 
 (defun calculate-room-count (density)
-  (with-slots (width height) *dungeon*
+  (with-attrs (width height) :dungeon
     (with-attrs (room-size-min room-size-max) :mine
       (setf room-size-min (clamp room-size-min 3 99)
             room-size-max (clamp room-size-max (+ room-size-min 2) 101))
@@ -51,7 +51,7 @@
 
 (defun create-room ()
   (multiple-value-bind (w h) (generate-room-size)
-    (with-slots (width height) *dungeon*
+    (with-attrs (width height) :dungeon
       (let* ((x (rng 'range-odd :max (- width w)))
              (y (rng 'range-odd :max (- height h)))
              (room (make-instance 'dungeon-room :x1 x :y1 y :w w :h h)))

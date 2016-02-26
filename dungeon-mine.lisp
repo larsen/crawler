@@ -9,7 +9,7 @@
                    :initform 0)))
 
 (defmethod make-buffers ((type (eql :mine)))
-  (with-slots (width height) *dungeon*
+  (with-attrs (width height) :dungeon
     (with-attrs (room-size-max) :mine
       (let ((min-size (* room-size-max 2)))
         (when (< width min-size) (setf width min-size))

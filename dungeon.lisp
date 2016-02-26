@@ -3,11 +3,7 @@
 (defvar *dungeon* nil)
 
 (defclass dungeon ()
-  ((width :reader width
-          :initarg :w)
-   (height :reader height
-           :initarg :h)
-   (buffers :accessor buffers
+  ((buffers :accessor buffers
             :initform (list 0))
    (tiles :accessor tiles
           :initarg :tiles)))
@@ -17,19 +13,17 @@
     (call-next-method :buffer i)))
 
 (defmethod create-walls (&key buffer)
-  (with-slots (width height) *dungeon*
+  (with-attrs (width height) :dungeon
     (loop :for x :below width
-          do (loop :for y :below height
-                   :do (setf (tile x y :buffer buffer) (make-instance 'tile :x x :y y))))))
-
-(defgeneric build (type))
+          :do (loop :for y :below height
+                    :do (make-tile x y buffer)))))
 
 (defmethod build :around (type)
   (create-walls)
   (call-next-method))
 
-(defun make-dungeon (type width height &rest attrs)
-  (setf *dungeon* (make-instance (intern (string type) :crawler) :w width :h height))
+(defun make-dungeon (type &rest attrs)
+  (setf *dungeon* (make-instance (intern (string type) :crawler)))
   (load-data)
   (make-generator type attrs)
   (make-buffers type)

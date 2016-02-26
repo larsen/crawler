@@ -1,24 +1,5 @@
 (in-package :crawler)
 
-(defstruct (queue)
-  (items)
-  (tail))
-
-(defun queue-empty-p (queue)
-  (endp (queue-items queue)))
-
-(defun enqueue (item queue)
-  (if (queue-empty-p queue)
-      (setf (queue-items queue) (list item)
-            (queue-tail queue) (queue-items queue))
-      (setf (cdr (queue-tail queue)) (list item)
-            (queue-tail queue) (cdr (queue-tail queue))))
-  queue)
-
-(defun dequeue (queue)
-  (unless (queue-empty-p queue)
-    (pop (queue-items queue))))
-
 (defun staircase-suitable-p (tile &optional neighbors)
   (declare (ignore neighbors))
   (and (roomp tile)
@@ -26,8 +7,8 @@
        (not (adjacent-junction-p tile))))
 
 (defun upstairs-choices ()
-  (with-slots (width height rooms) *dungeon*
-    (with-slots (x1 y1 x2 y2) (rng 'elt :list rooms)
+  (with-attrs (width height) :dungeon
+    (with-slots (x1 y1 x2 y2) (rng 'elt :list (rooms *dungeon*))
       (mapcar #'first
               (collect-tiles
                #'staircase-suitable-p

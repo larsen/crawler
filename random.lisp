@@ -12,7 +12,10 @@
 (defun make-generator (type attrs)
   (setf (random-seed *random-generator*) (make-seed))
   (loop :for (attr . value) :in (plist-alist attrs)
-        :do (setf (attr type attr) value)))
+        :do (if (or (eq attr :width)
+                    (eq attr :height))
+                (setf (attr :dungeon attr) value)
+                (setf (attr type attr) value))))
 
 (defgeneric rng (type &key))
 

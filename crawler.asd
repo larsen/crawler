@@ -10,6 +10,7 @@
   :components ((:file "package")
                (:file "random")
                (:file "util")
+               (:file "queue")
                (:file "data")
                (:file "buffer")
                (:file "tile")
