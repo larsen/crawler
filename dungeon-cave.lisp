@@ -31,6 +31,6 @@
     (map-tiles (constantly t) #'identity #'evolve-tile)
     (swap-buffers)))
 
-(defmethod build ((type (eql :cave)))
+(defmethod build ((type (eql :cave)) &key)
   (fill-floors-by-percent 0.45)
   (evolve :generations 5))

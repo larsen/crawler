@@ -5,14 +5,7 @@
                   :height (* *tile-size* (attr :dungeon :height))
                   :debug :scancode-grave)
     ()
-  (render :cave))
-
-(defmethod select-color ((type (eql :cave)) x y)
-  (let ((tile (tile x y)))
-    (cond
-      ((walkablep tile)
-       (gray 1)))))
+  (draw))
 
 (defmethod regenerate ((window :cave))
-  (apply #'make-dungeon :cave (append (attrs-plist :cave)
-                                      (attrs-plist :dungeon))))
+  (apply #'build :cave (attrs-plist :cave)))

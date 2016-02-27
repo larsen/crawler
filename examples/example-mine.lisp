@@ -5,20 +5,7 @@
                   :height (* *tile-size* (attr :dungeon :height))
                   :debug :scancode-grave)
     ()
-  (render :mine))
-
-(defmethod select-color ((type (eql :mine)) x y)
-  (let ((tile (tile x y)))
-    (cond
-      ((featuresp tile '(:stairs-up))
-       (rgb 1 0 0))
-      ((featuresp tile '(:stairs-down))
-       (rgb 0 1 0))
-      ((featuresp tile '(:junction))
-       (rgb 0.1 0.5 1))
-      ((walkablep tile)
-       (gray 1)))))
+  (draw))
 
 (defmethod regenerate ((window :mine))
-  (apply #'make-dungeon :mine (append (attrs-plist :mine)
-                                      (attrs-plist :dungeon))))
+  (apply #'build :mine (attrs-plist :mine)))

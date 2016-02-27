@@ -36,7 +36,7 @@
               (move-connectors connected region-id))
     (map-tiles #'connectorp #'region-id #'make-extra-junction)))
 
-(defmethod build ((type (eql :mine)))
+(defmethod build ((type (eql :mine)) &key)
   (create-rooms)
   (map-tiles #'carvablep #'walkablep #'carve)
   (map-tiles #'connectorp #'region-id #'make-connector)

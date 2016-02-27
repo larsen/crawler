@@ -28,9 +28,9 @@
     data))
 
 (defmethod attrs-plist (data)
-  (loop :for (attr . value) :in (slot-value (data data) 'attrs)
-        :collect (make-keyword attr)
-        :collect value))
+  (append
+   (alist-plist (attrs (data data)))
+   (alist-plist (attrs (data :dungeon)))))
 
 (defmethod attr (data name)
   (when-let ((data (data data)))

@@ -8,6 +8,9 @@
    (tiles :accessor tiles
           :initarg :tiles)))
 
+(defun make-dungeon (type)
+  (setf *dungeon* (make-instance (intern (string type) :crawler))))
+
 (defmethod create-walls :around (&key)
   (dolist (i (buffers *dungeon*))
     (call-next-method :buffer i)))
@@ -18,14 +21,11 @@
           :do (loop :for y :below height
                     :do (make-tile x y buffer)))))
 
-(defmethod build :around (type)
-  (create-walls)
-  (call-next-method))
-
-(defun make-dungeon (type &rest attrs)
-  (setf *dungeon* (make-instance (intern (string type) :crawler)))
+(defmethod build :around (type &rest attrs)
+  (make-dungeon type)
   (load-data)
   (make-generator type attrs)
   (make-buffers type)
-  (build type)
+  (create-walls)
+  (call-next-method)
   *dungeon*)

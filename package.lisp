@@ -4,7 +4,7 @@
   (:use #:cl
         #:alexandria
         #:cl-variates)
-  (:export #:make-dungeon
+  (:export #:build
            #:*dungeon*
            #:attr
            #:with-attrs
