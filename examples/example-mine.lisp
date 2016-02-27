@@ -22,6 +22,3 @@
 (defmethod regenerate ((window :mine))
   (apply #'make-dungeon :mine (append (attrs-plist :mine)
                                       (attrs-plist :dungeon))))
-
-(defmethod run ((type (eql :mine)) &key)
-  (make-instance :mine))

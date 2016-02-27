@@ -21,6 +21,6 @@
              (= button 1))
     (regenerate window)))
 
-(defmethod run :around (type &rest attrs)
+(defmethod run (type &rest attrs)
   (when (apply #'make-dungeon type attrs)
-    (call-next-method)))
+    (make-instance type)))

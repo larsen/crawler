@@ -16,6 +16,3 @@
 (defmethod regenerate ((window :cave))
   (apply #'make-dungeon :cave (append (attrs-plist :cave)
                                       (attrs-plist :dungeon))))
-
-(defmethod run ((type (eql :cave)) &key)
-  (make-instance :cave))
