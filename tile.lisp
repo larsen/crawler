@@ -58,10 +58,13 @@
      :se (funcall func (tile (1+ x) (1+ y)))
      :sw (funcall func (tile (1- x) (1+ y))))))
 
+(defmacro with-neighbors (neighbors &body body)
+  `(with-slots (n ne e se s sw w nw) ,neighbors
+     ,@body))
+
 (defun walkable-neighbors (tile)
-  (let ((neighbors (get-neighbors tile #'identity)))
-    (with-slots (n s e w) neighbors
-      (remove-if (lambda (x) (not (walkablep x))) (list n s e w)))))
+  (with-neighbors (get-neighbors tile #'identity)
+    (remove-if (lambda (x) (not (walkablep x))) (list n s e w))))
 
 (defun map-tiles (filter func effect &key (start '(1 1)) (end '(-1 -1)))
   (with-attrs (width height) :dungeon
@@ -113,17 +116,17 @@
   (some (lambda (x) (member x features)) (map-features tile)))
 
 (defun carvablep (tile neighbors)
-  (with-slots (n s e w nw ne se sw) neighbors
+  (with-neighbors neighbors
     (every #'null (list (walkablep tile) n s e w nw ne se sw))))
 
 (defun connectorp (tile neighbors)
-  (with-slots (n s e w) neighbors
+  (with-neighbors neighbors
     (and (not (region-id tile))
          (or (and (not (eql n s)) n s)
              (and (not (eql e w)) e w)))))
 
 (defun dead-end-p (tile neighbors)
-  (with-slots (n s e w) neighbors
+  (with-neighbors neighbors
     (let ((dirs (remove-if #'identity (list n s e w))))
       (and (walkablep tile)
            (>= (length dirs) 3)))))
@@ -131,7 +134,7 @@
 (defun erode-dead-end (tile neighbors)
   (make-wall tile neighbors)
   (with-slots (x y) tile
-    (with-slots (n s e w) neighbors
+    (with-neighbors neighbors
       (let ((dirs (remove nil `(((,x ,(1- y)) . ,n)
                                 ((,x ,(1+ y)) . ,s)
                                 ((,(1+ x) ,y) . ,e)
@@ -144,7 +147,7 @@
               (list next-tile next-neighbors))))))))
 
 (defun make-connector (tile neighbors)
-  (with-slots (n s e w) neighbors
+  (with-neighbors neighbors
     (setf (adjacent-regions tile) (remove nil (list n s e w)))
     (dolist (region-id (adjacent-regions tile))
       (push tile (connectors (get-region region-id))))))

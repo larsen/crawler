@@ -8,12 +8,14 @@
         :for tile = (random-tile :perimeterp nil)
         :until (zerop count)
         :when (wallp tile)
-          :do (make-floor tile)
-              (decf count)))
+          :do (with-neighbors (get-neighbors tile #'roomp)
+                (unless (remove-if #'null (list n ne e se s sw w nw))
+                  (make-floor tile)
+                  (decf count)))))
 
 (defun evolve-tile (tile neighbors)
   (with-slots (x y) tile
-    (with-slots (n ne e se s sw w nw) neighbors
+    (with-neighbors neighbors
       (let ((dirs (remove-if-not #'wallp (list n ne e se s sw w nw)))
             (target (tile x y :buffer (next-buffer))))
         (setf (walkablep target) (walkablep tile)

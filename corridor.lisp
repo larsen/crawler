@@ -8,7 +8,7 @@
     (if tilep (apply #'tile cell) cell)))
 
 (defun pick-cell (cells)
-  (if (> (rng 'range-inc) (clamp (attr :mine :windiness) 0 1))
+  (if (> (rng 'range-inc) (clamp (attr :mine :corridor-windiness) 0 1))
       (rng 'elt :list cells)
       (first (last cells))))
 
