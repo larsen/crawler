@@ -11,15 +11,14 @@
 (defun make-dungeon (type)
   (setf *dungeon* (make-instance (intern (string type) :crawler))))
 
-(defmethod create-walls :around (&key)
-  (dolist (i (buffers *dungeon*))
-    (call-next-method :buffer i)))
+(defmethod make-buffers (type))
 
-(defmethod create-walls (&key buffer)
+(defmethod create-walls ()
   (with-attrs (width height) :dungeon
-    (loop :for x :below width
-          :do (loop :for y :below height
-                    :do (make-tile x y buffer)))))
+    (dolist (buffer (buffers *dungeon*))
+      (dotimes (x width)
+        (dotimes (y height)
+          (make-tile x y buffer))))))
 
 (defmethod build :around (type &rest attrs)
   (make-dungeon type)

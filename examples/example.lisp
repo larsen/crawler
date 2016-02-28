@@ -2,17 +2,6 @@
 
 (defvar *tile-size* 10)
 
-(defsketch example (:title "Example"
-                    :width (* *tile-size* (attr :dungeon :width))
-                    :height (* *tile-size* (attr :dungeon :height))
-                    :debug :scancode-grave)
-    ()
-  (draw))
-
-(defclass :mine (example) ())
-
-(defclass :cave (example) ())
-
 (defmethod draw ()
   (background (gray 0.2))
   (with-attrs (width height) :dungeon
@@ -31,9 +20,9 @@
   (let ((tile (tile x y)))
     (cond
       ((featuresp tile '(:stairs-up))
-       (rgb 1 0 0))
+       (rgb 1 0.5 0.1))
       ((featuresp tile '(:stairs-down))
-       (rgb 0 1 0))
+       (rgb 0.1 1 0.5))
       ((featuresp tile '(:junction))
        (rgb 0.1 0.5 1))
       ((walkablep tile)
@@ -42,8 +31,7 @@
 (defmethod mousebutton-event :after (window state ts button x y)
   (when (and (eq state :MOUSEBUTTONUP)
              (= button 1))
-    (let ((type (class-name (class-of window))))
-      (apply #'build type (attrs-plist type)))))
+    (regenerate window)))
 
 (defmethod run (type &rest attrs)
   (when (apply #'build type attrs)

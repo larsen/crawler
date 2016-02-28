@@ -9,4 +9,6 @@
   :serial t
   :pathname "examples"
   :components ((:file "package")
-               (:file "example")))
+               (:file "example")
+               (:file "example-mine")
+               (:file "example-cave")))

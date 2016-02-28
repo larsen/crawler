@@ -3,8 +3,6 @@
 (defclass cave (dungeon)
   ((buffers :initform (list 0 1))))
 
-(defmethod make-buffers ((type (eql :cave))))
-
 (defun fill-floors-by-percent (percent)
   (loop :with count = (tile-count :percent percent :perimeterp nil)
         :for tile = (random-tile :perimeterp nil)
