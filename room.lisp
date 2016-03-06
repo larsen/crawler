@@ -24,8 +24,8 @@
     (with-attrs (room-size-min room-size-max) :mine
       (setf room-size-min (clamp room-size-min 3 99)
             room-size-max (clamp room-size-max (+ room-size-min 2) 101))
-      (let* ((smallest-area (* (expt room-size-min 2)))
-             (largest-area (* (expt room-size-max 2)))
+      (let* ((smallest-area (expt room-size-min 2))
+             (largest-area (expt room-size-max 2))
              (average-area (/ (abs (- largest-area smallest-area)) 2))
              (possible-rooms (/ (* width height) average-area)))
         (floor (* possible-rooms (clamp density 0.1 1)))))))
